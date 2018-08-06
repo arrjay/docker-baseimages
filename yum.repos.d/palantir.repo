@@ -1,0 +1,14 @@
+[palantir-essentials]
+name=Palantir Essential Packages
+baseurl=https://artifactory.palantir.build/artifactory/internal-yum-c$releasever-essentials/
+https://publish.artifactory.palantir.build/artifactory/internal-yum-c$releasever-essentials/
+enabled=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-Palantir-Arch
+
+[palantir-main]
+name=Palantir Supplemented Packages
+baseurl=https://artifactory.palantir.build/artifactory/internal-yum-c$releasever-palantir/
+https://publish.artifactory.palantir.build/artifactory/internal-yum-c$releasever-palantir/
+enabled=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-Palantir-Arch
+
