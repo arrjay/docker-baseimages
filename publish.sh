@@ -15,8 +15,8 @@ for img in $(docker images "final/*" --format "{{.Repository}}:{{.Tag}}") ; do
   case "${dest}" in
     ubuntu:*)
       vnum=$(docker run --rm=true "${img}" lsb_release -rs)
-      docker tag "${img}" "${DOCKER_SINK}/${vnum}"
-      [ "${NOPUSH}" ] || docker push "${DOCKER_SINK}/${vnum}"
+      docker tag "${img}" "${DOCKER_SINK}/ubuntu:${vnum}"
+      [ "${NOPUSH}" ] || docker push "${DOCKER_SINK}/ubuntu:${vnum}"
     ;;
   esac
   docker tag "${img}" "${DOCKER_SINK}/${dest}"
