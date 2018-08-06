@@ -13,7 +13,7 @@ set -x
 for img in $(docker images "final/*" --format "{{.Repository}}:{{.Tag}}") ; do
   dest="${img#final/}"
   case "${dest}" in
-    ubuntu/*)
+    ubuntu:*)
       vnum=$(docker run --rm=true "${img}" lsb_release -rs)
       docker tag "${img}" "${DOCKER_SINK}/${vnum}"
       [ "${NOPUSH}" ] || docker push "${DOCKER_SINK}/${vnum}"
