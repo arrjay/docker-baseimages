@@ -18,9 +18,5 @@ jobs:
           name: chroot build base images
           command: env FORCE_BUILD=1 ./mkimage-chroot.sh
       - run:
-          name: log in to docker.io
-          command: |
-              docker login -u $DOCKER_USER -p $DOCKER_PASS docker.io
-      - run:
           name: push base images
           command: env ./publish.sh
