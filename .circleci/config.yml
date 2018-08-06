@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: docker.io/redjays/c7:docker-ce
+      - image: centos:7
     working_directory: /project
     environment:
     steps:
@@ -18,7 +18,7 @@ jobs:
               docker login -u $DOCKER_USER -p $DOCKER_PASS docker.io
       - run:
           name: chroot build base images
-          command: env FORCE_BUILD=1 DOCKER_SINK=docker.io/redjays ./mkimage-chroot.sh
+          command: env FORCE_BUILD=1 DOCKER_SINK=docker.palantir.build/computetools ./mkimage-chroot.sh
       - run:
           name: push base images
           command: env DOCKER_SINK=docker.io/redjays ./publish.sh
