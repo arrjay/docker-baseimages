@@ -1,5 +1,6 @@
-deb http://us.archive.ubuntu.com/ubuntu/ trusty main universe 
-deb http://us.archive.ubuntu.com/ubuntu/ trusty-security main universe 
-deb http://us.archive.ubuntu.com/ubuntu/ trusty-updates main universe 
-
-
+deb https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ trusty main universe
+deb https://publish.artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ trusty main universe
+deb https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ trusty-security main universe
+deb https://publish.artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ trusty-security main universe
+deb https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ trusty-updates main universe
+deb https://publish.artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ trusty-updates main universe

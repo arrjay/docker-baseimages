@@ -1,5 +1,6 @@
-deb http://us.archive.ubuntu.com/ubuntu/ xenial main universe 
-deb http://us.archive.ubuntu.com/ubuntu/ xenial-security main universe 
-deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates main universe 
-
-
+deb https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ xenial main universe
+deb https://publish.artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ xenial main universe
+deb https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ xenial-security main universe
+deb https://publish.artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ xenial-security main universe
+deb https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ xenial-updates main universe
+deb https://publish.artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ xenial-updates main universe

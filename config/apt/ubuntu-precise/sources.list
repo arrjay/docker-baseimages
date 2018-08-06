@@ -1,5 +1,6 @@
-deb http://us.archive.ubuntu.com/ubuntu/ precise main universe 
-deb http://us.archive.ubuntu.com/ubuntu/ precise-security main universe 
-deb http://us.archive.ubuntu.com/ubuntu/ precise-updates main universe 
-
-
+deb https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ precise main universe
+deb https://publish.artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ precise main universe
+deb https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ precise-security main universe
+deb https://publish.artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ precise-security main universe
+deb https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ precise-updates main universe
+deb https://publish.artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ precise-updates main universe

@@ -1,5 +1,6 @@
-deb http://us.archive.ubuntu.com/ubuntu/ bionic main universe 
-deb http://us.archive.ubuntu.com/ubuntu/ bionic-security main universe 
-deb http://us.archive.ubuntu.com/ubuntu/ bionic-updates main universe 
-
-
+deb https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ bionic main universe
+deb https://publish.artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ bionic main universe
+deb https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ bionic-security main universe
+deb https://publish.artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ bionic-security main universe
+deb https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ bionic-updates main universe
+deb https://publish.artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/ bionic-updates main universe
