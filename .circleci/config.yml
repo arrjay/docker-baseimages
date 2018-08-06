@@ -6,7 +6,6 @@ jobs:
       - image: docker.palantir.build/circle2-build-images/ubuntu-jdk-npm:0.19.0
     working_directory: ~/project
     environment:
-      - CIRCLECI=true
       - DOCKER_SINK=docker.palantir.build/computetools
       - UBUNTU_URI=https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/
     steps:
@@ -14,7 +13,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: install prerequisites
-          command: sudo apt-get -q update && sudo apt-get -q -yy install debootstrap yum
+          command: sudo apt-get -q update && sudo apt-get -q -yy install debootstrap yum db-util
       - run:
           name: chroot build base images
           command: env FORCE_BUILD=1 ./mkimage-chroot.sh
