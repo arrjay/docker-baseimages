@@ -4,7 +4,7 @@ jobs:
   build:
     docker:
       - image: docker.palantir.build/circle2-build-images/ubuntu-jdk-npm:0.19.0
-    working_directory: /project
+    working_directory: ~/project
     environment:
       - DOCKER_SINK=docker.palantir.build/computetools
       - UBUNTU_URI=https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/
