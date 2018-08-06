@@ -6,6 +6,7 @@ jobs:
       - image: centos:7
     working_directory: /project
     environment:
+      - DOCKER_SINK=docker.palantir.build/computetools
     steps:
       - checkout
       - run:
@@ -13,12 +14,12 @@ jobs:
           command: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo && yum -y install docker-ce && yum -y install epel-release && yum -y install debootstrap perl which dpkg
       - setup_remote_docker
       - run:
+          name: chroot build base images
+          command: env FORCE_BUILD=1 ./mkimage-chroot.sh
+      - run:
           name: log in to docker.io
           command: |
               docker login -u $DOCKER_USER -p $DOCKER_PASS docker.io
       - run:
-          name: chroot build base images
-          command: env FORCE_BUILD=1 DOCKER_SINK=docker.palantir.build/computetools ./mkimage-chroot.sh
-      - run:
           name: push base images
-          command: env DOCKER_SINK=docker.io/redjays ./publish.sh
+          command: env ./publish.sh
