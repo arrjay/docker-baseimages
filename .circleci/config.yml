@@ -13,7 +13,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: install prerequisites
-          command: apt-get -q update && apt-get -q -yy install debootstrap yum
+          command: sudo apt-get -q update && sudo apt-get -q -yy install debootstrap yum
       - run:
           name: chroot build base images
           command: env FORCE_BUILD=1 ./mkimage-chroot.sh
