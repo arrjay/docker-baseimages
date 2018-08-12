@@ -6,6 +6,7 @@ export DEBIAN_FRONTEND=noninteractive
 platform="yum"
 type yum || platform=""
 type dnf && platform="dnf"
+type zypper && platform="zypper"
 [ -f /debootstrap/debootstrap ] && platform="apt"
 
 case "${platform}" in
@@ -27,6 +28,9 @@ case "${platform}" in
     }
 
     "${platform}" clean all
+  ;;
+  zypper)
+    "${platform}" -n verify
   ;;
   apt)
     dpkg-divert --rename /usr/bin/ischroot && ln -s /bin/true /usr/bin/ischroot

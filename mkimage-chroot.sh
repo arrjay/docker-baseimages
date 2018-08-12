@@ -62,6 +62,7 @@ create_chroot_tarball () {
   case "${packagemanager}" in
     *yum) packagemanager=yum ;;
     *dnf) packagemanager=dnf ;;
+    *zyp) packagemanager=zyp ;;
     *apt) packagemanager=apt ; [ ! -e "${debootstrap_file}" ] && { echo "missing ${debootstrap_file}" 1>&2 ; exit 1 ; } || true ;;
     *) echo "unknown packagemanager" 1>&2 ; exit 240 ;;
   esac
@@ -76,7 +77,7 @@ create_chroot_tarball () {
   conftar=$(mktemp --tmpdir conf.XXX.tar)
 
   case "${packagemanager}" in
-    yum|dnf)
+    yum|dnf|zyp)
       # init rpm, add gpg keys and release rpm
       rpm --initdb
       for gpg in "${gpg_keydir}"/* ; do
@@ -88,7 +89,9 @@ create_chroot_tarball () {
       if [ -e "${repos_d[0]}" ] ; then
         for f in "${repos_d[@]}" ; do
           b="${f##*/}"
-          sudo install -m644 "${f}" "${rootdir}/etc/yum.repos.d/${b}"
+          sudo install -D -m644 "${f}" "${rootdir}/etc/yum.repos.d/${b}"
+          # copy the zypper config over here if we're going to use that
+          [ "${packagemanager}" == "zyp" ] && sudo install -D -m644 "${f}" "${rootdir}/etc/zypp/repos.d/${b}"
         done
       fi
       case "${distribution}" in
@@ -100,6 +103,10 @@ create_chroot_tarball () {
         ;;
         fedora*)
           inst_packages=("@Minimal Install" dnf fedora-release fedora-release-notes fedora-gpg-keys)
+        ;;
+        opensuse*)
+          inst_packages=(bash glibc rpm zypper)
+        ;;
       esac
       case "${centos_ver}" in
         5) sed -e 's/,nocontexts//' < config/yum-common.conf | sudo tee "${rootdir}/etc/yum.conf" > /dev/null
@@ -160,7 +167,7 @@ EOA
   rpmdbfiles=$(mktemp --tmpdir "$(basename "$0")".XXXXXX)
 
   # ubuntu/debian do stupid things to rpm.
-  os_like=$(. /etc/os-release ; echo $ID_LIKE)
+  os_like=$(. /etc/os-release ; echo ${ID_LIKE:-})
   case "${os_like}" in
     debian) rpmdbdir="${HOME}/.rpmdb" ;;
     *)      rpmdbdir="/var/lib/rpm" ;;
@@ -273,6 +280,7 @@ docker_check () {
 
   case "${packagemanager}" in
     yum|dnf) docker run --rm=true "${image}" "${packagemanager}" check-update ;;
+    zyp) docker run --rm=true "${image}" zypper patch-check ;;
     apt) docker run --rm=true "${image}" bash -ec '{ export TERM=dumb ; apt-get -q update && apt-get dist-upgrade --assume-no; }' ;;
     *)   echo "don't know how to ${packagemanager}" 1>&2 ; exit 1 ;;
   esac
