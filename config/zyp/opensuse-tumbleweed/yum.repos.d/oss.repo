@@ -1,0 +1,7 @@
+# This is a yum repofile for OpenSUSE. 100% weird. ;)
+# thankfully, zypper and yum work 'close enough'
+[oss]
+enabled=1
+baseurl=http://download.opensuse.org/tumbleweed/repo/oss/
+autorefresh=1
+type=rpm-md
