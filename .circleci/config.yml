@@ -20,16 +20,16 @@ references:
 
 jobs:
   build:
+    <<: *common_config
     environment:
       - DOCKER_SINK=docker.palantir.build/computetools
       - UBUNTU_URI=https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/
       - FORCE_BUILD=1
-    <<: *common_config
   nightly:
+    <<: *common_config
     environment:
       - DOCKER_SINK=docker.palantir.build/computetools
       - UBUNTU_URI=https://artifactory.palantir.build/artifactory/external-apt-ubuntu-ec2/
-    <<: *common_config
 
 workflows:
   version: 2
