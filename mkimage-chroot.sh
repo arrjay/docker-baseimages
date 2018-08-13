@@ -160,7 +160,7 @@ EOA
   rpmdbfiles=$(mktemp --tmpdir "$(basename "$0")".XXXXXX)
 
   # ubuntu/debian do stupid things to rpm.
-  os_like=$(. /etc/os-release ; echo $ID_LIKE)
+  os_like=$(. /etc/os-release ; echo ${ID_LIKE:-})
   case "${os_like}" in
     debian) rpmdbdir="${HOME}/.rpmdb" ;;
     *)      rpmdbdir="/var/lib/rpm" ;;
