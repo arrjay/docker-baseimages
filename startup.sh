@@ -45,6 +45,16 @@ case "${platform}" in
   ;;
 esac
 
+# migrate /var/run to /run
+[ -L /var/run ] || {
+  mkdir -p /run
+  for i in /var/run/* ; do
+    [ -e "${i}" ] && mv "${i}" /run
+  done
+  rm -rf /var/run
+  ln -sf /run /var/run
+}
+
 [ ! -d /etc/stamps.d ] && rm -rf /etc/stamps.d && mkdir /etc/stamps.d
 date "+%s" > /etc/stamps.d/base.stamp
 
