@@ -32,7 +32,7 @@ wkdir=$(env TMPDIR=/var/tmp mktemp -d)
 export TMPDIR="${wkdir}"
 
 __cleanup () {
-  sudo rm -rf "${wkdir}"
+  [ -z "${NOCLEAN:-}" ] && sudo rm -rf "${wkdir}"
 }
 
 trap __cleanup EXIT ERR
@@ -120,7 +120,13 @@ create_chroot_tarball () {
       sudo cp "${rootdir}/etc/yum.conf" "${yumconf}"
       printf 'reposdir=%s\n' "${rootdir}/etc/yum.repos.d" >> "${yumconf}"
       sudo yum --releasever="${release}" --installroot="${rootdir}" -c "${yumconf}" repolist -v
-      sudo yum --releasever="${release}" --installroot="${rootdir}" -c "${yumconf}" install -q -y "${inst_packages[@]}"
+      sudo yum --releasever="${release}" --installroot="${rootdir}" -c "${yumconf}" install -y "${inst_packages[@]}"
+      # wire the rpmdb move here...
+      # see http://lists.rpm.org/pipermail/rpm-maint/2017-October/006681.html - moving the rpm dbs out of /var/lib/rpm
+      target_rpmdbdir="/usr/share/rpm" # ostree-alike rpmdb dir
+      [ "${packagemanager}" == "zyp" ] && target_rpmdbdir="/usr/lib/rpmdb" # this is what SuSE did
+      sudo mkdir -p "${rootdir}/etc/rpm"
+      printf '%%_dbpath\t\t%s\n' "${target_rpmdbdir}" | sudo tee -a "${rootdir}/etc/rpm/macros"
     ;;
     apt)
       keyring=( "${subdir}/gpg-keys"/*.gpg )
@@ -174,23 +180,9 @@ EOA
   esac
 
   case "${packagemanager}" in
-    yum|dnf)
+    yum|dnf|zyp)
       # use this for rpmdb extraction
-      cat << EOA > "${rpmdbfiles}"
-.${rpmdbdir}/Packages
-.${rpmdbdir}/Name
-.${rpmdbdir}/Basenames
-.${rpmdbdir}/Group
-.${rpmdbdir}/Requirename
-.${rpmdbdir}/Providename
-.${rpmdbdir}/Conflictname
-.${rpmdbdir}/Obsoletename
-.${rpmdbdir}/Triggername
-.${rpmdbdir}/Dirnames
-.${rpmdbdir}/Installtid
-.${rpmdbdir}/Sigmd5
-.${rpmdbdir}/Sha1header
-EOA
+      tar --list --file="${distribution}-${release}.tar" | grep "^.${rpmdbdir}" | grep -v '/$' | tee "${rpmdbfiles}"
 
     rpmdb_dump="/usr/lib/rpm/rpmdb_dump"
     [ -e "${rpmdb_dump}" ] || {
@@ -205,12 +197,12 @@ EOA
     rpmdb_dumpfiles=$(mktemp "$(basename "$0")".rpmdbdump.XXXXXX)
     # first, pry the rpmdb out.
     tar -C "${rpmdb_extract_dir}" --extract --file="${distribution}-${release}".tar --files-from="${rpmdbfiles}"
-    mkdir -p "${rpmdb_extract_dir}/var/lib/rpm"
+    mkdir -p "${rpmdb_extract_dir}${target_rpmdbdir}"
     # convert db files to dump files
     for x in "${rpmdb_extract_dir}${rpmdbdir}"/* ; do
       dumpfile="$(basename "${x}").dump"
-      "${rpmdb_dump}" "${x}" > "${rpmdb_extract_dir}/var/lib/rpm/${dumpfile}"
-      echo "./var/lib/rpm/${dumpfile}" >> "${rpmdb_dumpfiles}"
+      "${rpmdb_dump}" "${x}" > "${rpmdb_extract_dir}${target_rpmdbdir}/${dumpfile}"
+      echo ".${target_rpmdbdir}/${dumpfile}" >> "${rpmdb_dumpfiles}"
       rm "${x}"
     done
 
@@ -241,6 +233,7 @@ EOA
 ./etc/yum.conf.rpmnew
 ./etc/yum/yum.conf
 ./builddir
+".${rpmdbdir}"
 $(cat "${rpmdbfiles}")
 EOA
 
