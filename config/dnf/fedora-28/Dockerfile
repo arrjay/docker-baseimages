@@ -1,3 +1,8 @@
 FROM stage2/fedora-28
 
+ARG ADDITIONAL_RPM_PACKAGES=""
+ENV ADDITIONAL_RPM_PACKAGES=${ADDITIONAL_RPM_PACKAGES}
+
 ADD pki/rpm-gpg /etc/pki/rpm-gpg
+
+RUN bash -c '[ "${ADDITIONAL_RPM_PACKAGES}" ] && yum -y install ${ADDITIONAL_RPM_PACKAGES} || true'

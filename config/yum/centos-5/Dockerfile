@@ -1,8 +1,13 @@
 FROM stage2/centos-5
 
+ARG ADDITIONAL_RPM_PACKAGES=""
+ENV ADDITIONAL_RPM_PACKAGES=${ADDITIONAL_RPM_PACKAGES}
+
 ADD pki/rpm-gpg /etc/pki/rpm-gpg
 ADD pki/rpm-gpg-centos-5 /etc/pki/rpm-gpg
 
 RUN rpm --import /etc/pki/rpm-gpg/* && \
     yum -q -y install curl.x86_64 epel-release && \
     rm -f /etc/yum.repos.d/epel.repo.rpmnew
+
+RUN bash -c '[ "${ADDITIONAL_RPM_PACKAGES}" ] && yum -y install ${ADDITIONAL_RPM_PACKAGES} || true'

@@ -42,7 +42,7 @@ sudo () { env "$@"; }
 [ "$(id -u)" != "0" ] && sudo () { command sudo env "$@"; }
 
 create_chroot_tarball () {
-  local packagemanager distribution release subdir
+  local packagemanager distribution release subdir debootstrap
   subdir="${1}"
   packagemanager="${subdir%/*}"
   packagemanager="${packagemanager#*/}"
@@ -70,7 +70,7 @@ create_chroot_tarball () {
   # mock out commands via function overload here - which is exactly what we want, but drives shellcheck batty.
   # shellcheck disable=SC2032,SC2033
   rpm() { sudo rpm --root "${rootdir}" "${@}"; }
-  debootstrap() { sudo DEBOOTSTRAP_DIR="$(pwd)/debootstrap" bash -x "$(which debootstrap)" --verbose --variant=minbase --arch=amd64 "${@}" "${rootdir}" "${UBUNTU_URI}" ; }
+  debootstrap() { sudo DEBOOTSTRAP_DIR="$(pwd)/debootstrap" bash -x "${debootstrap}" --verbose --variant=minbase --arch=amd64 "${@}" "${rootdir}" "${UBUNTU_URI}" ; }
 
   # let's go!
   rootdir=$(mktemp -d)
@@ -129,6 +129,7 @@ create_chroot_tarball () {
       printf '%%_dbpath\t\t%s\n' "${target_rpmdbdir}" | sudo tee -a "${rootdir}/etc/rpm/macros"
     ;;
     apt)
+      debootstrap=$(which debootstrap)
       keyring=( "${subdir}/gpg-keys"/*.gpg )
       debootstrap --foreign --keyring="${keyring[0]}" "${release}" || true
       sudo mkdir -p --mode=0755 "${rootdir}/var/lib/resolvconf" && sudo touch "${rootdir}/var/lib/resolvconf/linkified"
@@ -299,19 +300,28 @@ check_existing () {
 }
 
 add_layers () {
-  local packagemanager distribution release subdir stage2name
+  local packagemanager distribution release subdir stage2name additional_rpms dist_addstr
   subdir="${1}"
   packagemanager="${subdir%/*}"
   packagemanager="${packagemanager#*/}"
   distribution="${subdir#*${packagemanager}/}"
   release="${distribution#*-}"
   distribution="${distribution%-${release}}"
+  additional_rpms=()
 
   stage2name=$(docker images "stage2/${distribution}-${release}" --format "{{.Repository}}")
 
   if [ ! -z  "${stage2name}" ] ; then
     if [ -f "${subdir}/Dockerfile" ] ; then
-      docker build -f "${subdir}/Dockerfile" -t "final/${distribution}:${release}" .
+      case "${packagemanager}" in
+        yum|dnf|zyp)
+          dist_addstr="ADDITIONAL_${distribution}_${release}_RPM_PACKAGES"
+          dist_addstr="${dist_addstr^^}"
+          [ "${ADDITIONAL_RPM_PACKAGES:-}" ] && additional_rpms+=("${ADDITIONAL_RPM_PACKAGES}")
+          [ "${!dist_addstr:-}" ]            && additional_rpms+=("${!dist_addstr}")
+        ;;
+      esac
+      IFS=' ' docker build -f "${subdir}/Dockerfile" -t "final/${distribution}:${release}" --build-arg ADDITIONAL_RPM_PACKAGES="${additional_rpms[*]}" .
     else
       docker tag "stage2/${distribution}-${release}" "final/${distribution}:${release}"
     fi
