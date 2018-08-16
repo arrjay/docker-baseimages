@@ -37,7 +37,12 @@ case "${platform}" in
     dpkg-divert --rename /usr/bin/ischroot && ln -s /bin/true /usr/bin/ischroot
     dpkg-divert --rename /usr/sbin/invoke-rc.d && ln -s /bin/true /usr/sbin/invoke-rc.d
     echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections
-    /debootstrap/debootstrap --second-stage || { cat /debootstrap/debootstrap.log ; exit 1; }
+    debootstrap_args="--second-stage --merged-usr"
+    read suite < debootstrap/suite
+    case "${suite}" in
+      precise|trusty) debootstrap_args="--second-stage" ;;
+    esac
+    /debootstrap/debootstrap ${debootstrap_args} || { cat /debootstrap/debootstrap.log ; exit 1; }
     install -m644 /apt-sources.list /etc/apt/sources.list && rm /apt-sources.list
     apt-get update
     apt-get --no-install-recommends install -qy debsums ca-certificates

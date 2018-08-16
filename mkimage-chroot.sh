@@ -135,7 +135,11 @@ create_chroot_tarball () {
     apt)
       debootstrap=$(which debootstrap)
       keyring=( "${subdir}/gpg-keys"/*.gpg )
-      debootstrap --foreign --keyring="${keyring[0]}" "${release}" || true
+      debootstrap_args="--foreign --merged-usr ${release}"
+      case "${release}" in
+        precise|trusty) debootstrap_args="--foreign ${release}"
+      esac
+      debootstrap --keyring="${keyring[0]}" ${debootstrap_args} || true
       sudo mkdir -p --mode=0755 "${rootdir}/var/lib/resolvconf" && sudo touch "${rootdir}/var/lib/resolvconf/linkified"
       [ -f "${subdir}/sources.list" ] && sudo install -m644 "${subdir}/sources.list" "${rootdir}/apt-sources.list"
       case "${distribution}" in
