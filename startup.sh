@@ -10,7 +10,7 @@ type zypper && platform="zypper"
 [ -f /debootstrap/debootstrap ] && platform="apt"
 
 case "${platform}" in
-  yum|dnf|zypper)
+  yum|dnf)
     # bring RPM back online from export so it works in chroot.
     dbpath=$(rpm --eval '%_dbpath')
     cd "${dbpath}"
