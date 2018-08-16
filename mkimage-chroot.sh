@@ -71,6 +71,9 @@ create_chroot_tarball () {
   # shellcheck disable=SC2032,SC2033
   rpm() { sudo rpm --root "${rootdir}" "${@}"; }
   debootstrap() { sudo DEBOOTSTRAP_DIR="$(pwd)/debootstrap" bash -x "${debootstrap}" --verbose --variant=minbase --arch=amd64 "${@}" "${rootdir}" "${UBUNTU_URI}" ; }
+  yum() { sudo yum --releasever="${release}" --installroot="${rootdir}" -c "${yumconf}" "${@}"; }
+  # if we're actually using dnf, do not install weak dependencies
+  type dnf 2> /dev/null 1>&2 && yum() { sudo dnf --setopt=install_weak_deps=False --best --releasever="${release}" --installroot="${rootdir}" -c "${yumconf}" "${@}" ; }
 
   # let's go!
   rootdir=$(mktemp -d)
@@ -119,8 +122,8 @@ create_chroot_tarball () {
       yumconf=$(mktemp --tmpdir yum.XXXX.conf)
       sudo cp "${rootdir}/etc/yum.conf" "${yumconf}"
       printf 'reposdir=%s\n' "${rootdir}/etc/yum.repos.d" >> "${yumconf}"
-      sudo yum --releasever="${release}" --installroot="${rootdir}" -c "${yumconf}" repolist -v
-      sudo yum --releasever="${release}" --installroot="${rootdir}" -c "${yumconf}" install -y "${inst_packages[@]}"
+      yum repolist -v
+      yum install -y "${inst_packages[@]}"
       # wire the rpmdb move here...
       [ "${packagemanager}" != "zyp" ] && {
         # see http://lists.rpm.org/pipermail/rpm-maint/2017-October/006681.html - moving the rpm dbs out of /var/lib/rpm
