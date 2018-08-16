@@ -122,11 +122,12 @@ create_chroot_tarball () {
       sudo yum --releasever="${release}" --installroot="${rootdir}" -c "${yumconf}" repolist -v
       sudo yum --releasever="${release}" --installroot="${rootdir}" -c "${yumconf}" install -y "${inst_packages[@]}"
       # wire the rpmdb move here...
-      # see http://lists.rpm.org/pipermail/rpm-maint/2017-October/006681.html - moving the rpm dbs out of /var/lib/rpm
-      target_rpmdbdir="/usr/share/rpm" # ostree-alike rpmdb dir
-      [ "${packagemanager}" == "zyp" ] && target_rpmdbdir="/usr/lib/rpmdb" # this is what SuSE did
-      sudo mkdir -p "${rootdir}/etc/rpm"
-      printf '%%_dbpath\t\t%s\n' "${target_rpmdbdir}" | sudo tee -a "${rootdir}/etc/rpm/macros"
+      [ "${packagemanager}" != "zyp" ] && {
+        # see http://lists.rpm.org/pipermail/rpm-maint/2017-October/006681.html - moving the rpm dbs out of /var/lib/rpm
+        target_rpmdbdir="/usr/share/rpm" # ostree-alike rpmdb dir
+        sudo mkdir -p "${rootdir}/etc/rpm"
+        printf '%%_dbpath\t\t%s\n' "${target_rpmdbdir}" | sudo tee -a "${rootdir}/etc/rpm/macros"
+      }
     ;;
     apt)
       debootstrap=$(which debootstrap)
@@ -181,7 +182,7 @@ EOA
   esac
 
   case "${packagemanager}" in
-    yum|dnf|zyp)
+    yum|dnf)
       # use this for rpmdb extraction
       tar --list --file="${distribution}-${release}.tar" | grep "^.${rpmdbdir}" | grep -v '/$' | tee "${rpmdbfiles}"
 
