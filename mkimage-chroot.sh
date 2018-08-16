@@ -199,7 +199,7 @@ EOA
       rpmdb_dump="db${libdb}_dump"
     }
     rpmdb_extract_dir=$(mktemp -d --tmpdir "$(basename "$0")".XXXXXX)
-    rpmdb_dumpfiles=$(mktemp "$(basename "$0")".rpmdbdump.XXXXXX)
+    rpmdb_dumpfiles=$(mktemp --tmpdir "$(basename "$0")".rpmdbdump.XXXXXX)
     # first, pry the rpmdb out.
     tar -C "${rpmdb_extract_dir}" --extract --file="${distribution}-${release}".tar --files-from="${rpmdbfiles}"
     mkdir -p "${rpmdb_extract_dir}${target_rpmdbdir}"
