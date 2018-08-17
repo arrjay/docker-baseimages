@@ -43,6 +43,7 @@ sudo () { env "$@"; }
 
 create_chroot_tarball () {
   local packagemanager distribution release subdir debootstrap
+  local repos_d repos2_d gpg
   subdir="${1}"
   packagemanager="${subdir%/*}"
   packagemanager="${packagemanager#*/}"
@@ -97,6 +98,25 @@ create_chroot_tarball () {
           [ "${packagemanager}" == "zyp" ] && sudo install -D -m644 "${f}" "${rootdir}/etc/zypp/repos.d/${b}"
         done
       fi
+      [ "${ADDITIONAL_CONFIG_DIR:-}" ] && {
+        repos2_d=( "${ADDITIONAL_CONFIG_DIR}/${subdir#config/}/yum.repos.d"/*.repo )
+        # if we have an additional config dir, plug in overrides now.
+        if [ -e "${repos2_d[0]}" ] ; then
+          for f in "${repos2_d[@]}" ; do
+            b="${f##*/}"
+            sudo install -D -m644 "${f}" "${rootdir}/etc/yum.repos.d/${b}"
+            # copy the zypper config over here if we're going to use that
+            [ "${packagemanager}" == "zyp" ] && sudo install -D -m644 "${f}" "${rootdir}/etc/zypp/repos.d/${b}"
+          done
+        fi
+        # if we have a stage2 here, copy all of that now plz.
+        add_stage2_yum="${ADDITIONAL_CONFIG_DIR}/${subdir#config/}/yum.repos.d/stage2"
+        add_stage2_yumconf=( "${add_stage2_yum}"/*.repo )
+        [ -e "${add_stage2_yumconf[0]}" ] && {
+          sudo mkdir -p -m644   "${rootdir}/etc/yum.repos.d/stage2"
+          sudo install -D -m644 "${add_stage2_yumconf[@]}" "${rootdir}/etc/yum.repos.d/stage2/"
+        }
+      }
       case "${distribution}" in
         centos*)
           inst_packages=(@Base yum yum-plugin-ovl yum-utils centos-release)
@@ -307,6 +327,10 @@ check_existing () {
   fi
 }
 
+build_pki_layer () {
+  docker build -f "pki/Dockerfile" -t "pki" pki
+}
+
 add_layers () {
   local packagemanager distribution release subdir stage2name additional_rpms dist_addstr
   subdir="${1}"
@@ -316,6 +340,8 @@ add_layers () {
   release="${distribution#*-}"
   distribution="${distribution%-${release}}"
   additional_rpms=()
+
+  build_pki_layer
 
   stage2name=$(docker images "stage2/${distribution}-${release}" --format "{{.Repository}}")
 
