@@ -29,6 +29,16 @@ case "${platform}" in
     }
 
     "${platform}" clean all
+
+    [ -d /etc/yum.repos.d/stage2 ] && {
+      stage2_yum=( /etc/yum.repos.d/stage2/*.repo )
+      [ -e "${stage2_yum[0]}" ] && {
+        for r in "${stage2_yum[@]}" ; do
+          mv "${r}" /etc/yum.repos.d
+        done
+      }
+      rm -rf "/etc/yum.repos.d/stage2"
+    }
   ;;
   zypper)
     "${platform}" -n verify
