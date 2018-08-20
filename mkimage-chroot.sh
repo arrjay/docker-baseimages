@@ -157,12 +157,15 @@ create_chroot_tarball () {
       keyring=( "${subdir}/gpg-keys"/*.gpg )
       debootstrap_args="--foreign --merged-usr ${release}"
       case "${release}" in
-        precise|trusty) debootstrap_args="--foreign ${release}"
+        precise|trusty|xenial) debootstrap_args="--foreign ${release}"
       esac
       debootstrap --keyring="${keyring[0]}" ${debootstrap_args} || true
       sudo mkdir -p --mode=0755 "${rootdir}/var/lib/resolvconf" && sudo touch "${rootdir}/var/lib/resolvconf/linkified"
       [ -f "${subdir}/sources.list" ] && sudo install -m644 "${subdir}/sources.list" "${rootdir}/apt-sources.list"
-      [ -f "${ADDITIONAL_CONFIG_DIR}/${subdir#config/}/sources.list" ] && sudo install -m644 "${ADDITIONAL_CONFIG_DIR}/${subdir#config/}/sources.list" "${rootdir}/apt-sources.list"
+      [ "${ADDITIONAL_CONFIG_DIR:-}" ] && {
+        [ -f "${ADDITIONAL_CONFIG_DIR}/${subdir#config/}/sources.list" ] && \
+          sudo install -m644 "${ADDITIONAL_CONFIG_DIR}/${subdir#config/}/sources.list" "${rootdir}/apt-sources.list"
+      }
       case "${distribution}" in
         ubuntu*) sudo mkdir -p --mode=0755 "${rootdir}/usr/share/keyrings" && sudo install -m644 "${keyring[0]}" "${rootdir}/usr/share/keyrings/ubuntu-archive-keyring.gpg" ;;
       esac
