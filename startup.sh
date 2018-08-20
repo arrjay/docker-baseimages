@@ -50,7 +50,7 @@ case "${platform}" in
     debootstrap_args="--second-stage --merged-usr"
     read suite < debootstrap/suite
     case "${suite}" in
-      precise|trusty) debootstrap_args="--second-stage" ;;
+      xenial|precise|trusty) debootstrap_args="--second-stage" ;;
     esac
     /debootstrap/debootstrap ${debootstrap_args} || { cat /debootstrap/debootstrap.log ; exit 1; }
     install -m644 /apt-sources.list /etc/apt/sources.list && rm /apt-sources.list
