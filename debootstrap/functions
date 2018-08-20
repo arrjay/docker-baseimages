@@ -1131,7 +1131,7 @@ setup_devices () {
 		return 0
 	fi
 
-	if [ "$CIRCLE" ]; then
+	if [ "$CIRCLECI" ]; then
 		setup_devices_bind
 		return 0
 	fi
