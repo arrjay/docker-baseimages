@@ -71,7 +71,7 @@ create_chroot_tarball () {
   # mock out commands via function overload here - which is exactly what we want, but drives shellcheck batty.
   # shellcheck disable=SC2032,SC2033
   rpm() { sudo rpm --root "${rootdir}" "${@}"; }
-  debootstrap() { sudo CIRCLE="${CIRCLE:-}" DEBOOTSTRAP_DIR="$(pwd)/debootstrap" bash -x "${debootstrap}" --verbose --variant=minbase --arch=amd64 "${@}" "${rootdir}" "${UBUNTU_URI}" ; }
+  debootstrap() { sudo CIRCLECI="${CIRCLECI:-}" DEBOOTSTRAP_DIR="$(pwd)/debootstrap" bash -x "${debootstrap}" --verbose --variant=minbase --arch=amd64 "${@}" "${rootdir}" "${UBUNTU_URI}" ; }
   yum() { sudo yum --releasever="${release}" --installroot="${rootdir}" -c "${yumconf}" "${@}"; }
   # if we're actually using dnf, do not install weak dependencies
   type dnf 2> /dev/null 1>&2 && yum() { sudo dnf --setopt=install_weak_deps=False --best --releasever="${release}" --installroot="${rootdir}" -c "${yumconf}" "${@}" ; }
