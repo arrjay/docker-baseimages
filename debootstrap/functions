@@ -1126,27 +1126,7 @@ setup_proc_fakechroot () {
 
 # create the static device nodes
 setup_devices () {
-	if doing_variant fakechroot; then
-		setup_devices_fakechroot
-		return 0
-	fi
-
-	if [ "$CIRCLECI" ]; then
-		setup_devices_bind
-		return 0
-	fi
-
-	case "$HOST_OS" in
-	    kfreebsd*)
-		;;
-	    freebsd)
-		;;
-	    hurd*)
-		;;
-	    *)
-		setup_devices_simple
-		;;
-	esac
+	setup_devices_bind
 }
 
 # enable the dynamic device nodes
