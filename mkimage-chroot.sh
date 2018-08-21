@@ -61,17 +61,18 @@ create_chroot_tarball () {
   # if we didn't get packagemanager, distribution display usage
   # shellcheck disable=SC2015
   case "${packagemanager}" in
-    *yum) packagemanager=yum ;;
-    *dnf) packagemanager=dnf ;;
-    *zyp) packagemanager=zyp ;;
-    *apt) packagemanager=apt ; [ ! -e "${debootstrap_file}" ] && { echo "missing ${debootstrap_file}" 1>&2 ; exit 1 ; } || true ;;
+    *yum) packagemanager=yum ; arch=x86_64 ;;
+    *dnf) packagemanager=dnf ; arch=x86_64 ;;
+    *zyp) packagemanager=zyp ; arch=x86_64 ;;
+    *apt) packagemanager=apt ; arch=amd64 ; [ ! -e "${debootstrap_file}" ] && { echo "missing ${debootstrap_file}" 1>&2 ; exit 1 ; } || true ;;
     *) echo "unknown packagemanager" 1>&2 ; exit 240 ;;
   esac
 
   # mock out commands via function overload here - which is exactly what we want, but drives shellcheck batty.
   # shellcheck disable=SC2032,SC2033
   rpm() { sudo rpm --root "${rootdir}" "${@}"; }
-  debootstrap() { sudo DEBOOTSTRAP_DIR="$(pwd)/debootstrap" bash -x "${debootstrap}" --verbose --variant=minbase --arch=amd64 "${@}" "${rootdir}" "${UBUNTU_URI}" ; }
+  [ -f "${subdir}/arch" ] && read -r arch < "${subdir}/arch"
+  debootstrap() { sudo DEBOOTSTRAP_DIR="$(pwd)/debootstrap" bash -x "${debootstrap}" --verbose --variant=minbase "--arch=${arch}" "${@}" "${rootdir}" "${UBUNTU_URI}" ; }
   yum() { sudo yum --releasever="${release}" --installroot="${rootdir}" -c "${yumconf}" "${@}"; }
   # if we're actually using dnf, do not install weak dependencies
   type dnf 2> /dev/null 1>&2 && yum() { sudo dnf --setopt=install_weak_deps=False --best --releasever="${release}" --installroot="${rootdir}" -c "${yumconf}" "${@}" ; }
@@ -122,7 +123,7 @@ create_chroot_tarball () {
           inst_packages=(@Base yum yum-plugin-ovl yum-utils centos-release)
           # https://lists.centos.org/pipermail/centos-devel/2018-March/016542.html
           sudo mkdir -p "${rootdir}/etc/yum/vars"
-          uname -m | grep -q 'x86_64'  && echo 'centos' | sudo tee "${rootdir}/etc/yum/vars/contentdir" || echo 'altarch' | sudo tee "${rootdir}/etc/yum/vars/contentdir"
+          [ "${arch}" == 'x86_64' ]  && echo 'centos' | sudo tee "${rootdir}/etc/yum/vars/contentdir" || echo 'altarch' | sudo tee "${rootdir}/etc/yum/vars/contentdir"
         ;;
         fedora*)
           inst_packages=("@Minimal Install" dnf fedora-release fedora-release-notes fedora-gpg-keys)
