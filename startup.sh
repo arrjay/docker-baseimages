@@ -55,7 +55,7 @@ case "${platform}" in
     /debootstrap/debootstrap ${debootstrap_args} || { cat /debootstrap/debootstrap.log ; exit 1; }
     install -m644 /apt-sources.list /etc/apt/sources.list && rm /apt-sources.list
     apt-get update
-    apt-get --no-install-recommends install -qy debsums ca-certificates
+    apt-get --no-install-recommends install -qy apt-transport-https debsums ca-certificates
     apt-get -qy dist-upgrade
     debsums_init
     apt-get clean all
