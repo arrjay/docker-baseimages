@@ -1,5 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -ex
+
+shopt -s nullglob
 
 export DEBIAN_FRONTEND=noninteractive
 
@@ -45,14 +47,17 @@ case "${platform}" in
   ;;
 esac
 
-# migrate /var/run to /run
-[ -L /var/run ] || {
-  mkdir -p /run
-  for i in /var/run/* ; do
-    [ -e "${i}" ] && mv "${i}" /run
-  done
-  rm -rf /var/run
-  ln -sf /run /var/run
+# migrate /var/run to /run *if* we have systemd
+systemd_lib=( /lib/x86_64-linux-gnu/libsystemd.so* /lib64/libsystemd.so* )
+[ -e "${systemd_lib[0]}" ] && {
+  [ -L /var/run ] || {
+    mkdir -p /run
+    for i in /var/run/* ; do
+      [ -e "${i}" ] && mv "${i}" /run
+    done
+    rm -rf /var/run
+    ln -sf /run /var/run
+  }
 }
 
 [ ! -d /etc/stamps.d ] && rm -rf /etc/stamps.d && mkdir /etc/stamps.d
