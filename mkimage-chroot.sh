@@ -181,6 +181,7 @@ create_chroot_tarball () {
 
   # create config tar
   scratch=$(mktemp -d --tmpdir "$(basename "$0")".XXXXXX)
+  ln -s /proc/mounts   "${scratch}"/etc/mtab
   mkdir -p             "${scratch}"/etc/sysconfig
   chmod a+rx           "${scratch}"/etc/sysconfig
   case "${packagemanager}" in
@@ -193,6 +194,7 @@ create_chroot_tarball () {
   printf 'NETWORKING=yes\nHOSTNAME=localhost.localdomain\n' > "${scratch}"/etc/sysconfig/network
   printf '127.0.0.1   localhost localhost.localdomain\n'    > "${scratch}"/etc/hosts
   tar --numeric-owner --group=0 --owner=0 -c -C "${scratch}" --files-from=- -f "${conftar}" << EOA || true
+./etc/mtab
 ./etc/hosts
 ./etc/sysconfig/network
 ./var/cache/yum
