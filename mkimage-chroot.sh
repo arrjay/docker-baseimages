@@ -248,6 +248,7 @@ EOA
   esac
 
   tar --delete --file="${distribution}-${release}".tar --files-from=- << EOA || true
+./etc/mtab
 ./usr/lib/locale
 ./usr/share/locale
 ./lib/gconv
