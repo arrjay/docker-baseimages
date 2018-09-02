@@ -292,9 +292,9 @@ create_chroot_tarball () {
   # create config tar
   echo "creating in-docker configuration files" 1>&2
   scratch=$(mktemp -d --tmpdir "$(basename "$0")".XXXXXX)
-  mkdir -p             "${scratch}"/etc/sysconfig
+  mkdir -p             "${scratch}"/etc/{sysconfig,stamps.d}
   chmod a+rx           "${scratch}"/etc
-  chmod a+rx           "${scratch}"/etc/sysconfig
+  chmod a+rx           "${scratch}"/etc/{sysconfig,stamps.d}
   ln -s /proc/mounts   "${scratch}"/etc/mtab
   case "${packagemanager}" in
     yum)
@@ -304,10 +304,14 @@ create_chroot_tarball () {
   esac
   cp       startup.sh  "${scratch}"/startup
   mkdir -p --mode=0755 "${scratch}"/var/cache/ldconfig
-  printf '127.0.0.1   localhost localhost.localdomain\n'    > "${scratch}"/etc/hosts
+  printf '%s\n' "${timestamp}"                              > "${scratch}/etc/stamps.d/base-build.stamp"
+  printf '%s\n' "${coderev}"                                > "${scratch}/etc/stamps.d/base-code.stamp"
+  printf '127.0.0.1   localhost localhost.localdomain\n'    > "${scratch}/etc/hosts"
   tar --numeric-owner --group=0 --owner=0 -c -C "${scratch}" --files-from=- -f "${conftar}" 2>/dev/null << EOA || true
 ./etc/mtab
 ./etc/hosts
+./etc/stamps.d/base-build.stamp
+./etc/stamps.d/base-code.stamp
 ./etc/sysconfig/network
 ./var/cache/yum
 ./var/cache/ldconfig
