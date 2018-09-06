@@ -218,7 +218,7 @@ create_chroot_tarball () {
           sudo mkdir -p "${rootdir}/etc/yum/vars"
           __centos_contentdir='centos'
           [ "${arch}" != 'x86_64' ] && __centos_contentdir='altarch'
-          echo "${__centos_contentdir}"  sudo tee "${rootdir}/etc/yum/vars/contentdir" > /dev/null
+          echo "${__centos_contentdir}" | sudo tee "${rootdir}/etc/yum/vars/contentdir" > /dev/null
         ;;
         fedora*)
           inst_packages=("@Minimal Install" dnf fedora-release fedora-release-notes fedora-gpg-keys)
