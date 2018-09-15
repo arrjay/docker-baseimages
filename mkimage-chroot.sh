@@ -134,10 +134,10 @@ create_chroot_tarball () {
 
   # create config tar
   scratch=$(mktemp -d --tmpdir "$(basename "$0")".XXXXXX)
-  mkdir -p             "${scratch}"/etc/sysconfig
-  chmod a+rx           "${scratch}"/etc
-  chmod a+rx           "${scratch}"/etc/sysconfig
-  ln -s /proc/mounts   "${scratch}"/etc/mtab
+  mkdir -p                    "${scratch}"/etc/sysconfig
+  chmod a+rx                  "${scratch}"/etc
+  chmod a+rx                  "${scratch}"/etc/sysconfig
+  ln -s ../proc/self/mounts   "${scratch}"/etc/mtab
   case "${packagemanager}" in
     yum)
   mkdir -p --mode=0755 "${scratch}"/var/cache/yum
