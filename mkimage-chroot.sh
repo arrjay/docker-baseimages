@@ -233,6 +233,7 @@ EOA
 ./etc/ld.so.cache
 ./etc/sysconfig/network
 ./etc/hosts
+./etc/mtab
 ./etc/hosts.rpmnew
 ./etc/yum.conf.rpmnew
 ./etc/yum/yum.conf
