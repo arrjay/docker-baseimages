@@ -256,7 +256,7 @@ create_chroot_tarball () {
       keyring=( "${subdir}/gpg-keys"/*.gpg )
       debootstrap_args="--foreign --merged-usr ${release}"
       case "${release}" in
-        precise|trusty|xenial) debootstrap_args="--foreign ${release}"
+        precise|trusty|xenial) debootstrap_args="--foreign --no-merged-usr ${release}"
       esac
 
       echo "installing system using host debootstrap" 1>&2
