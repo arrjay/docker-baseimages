@@ -78,6 +78,21 @@ case "${platform}" in
   ;;
 esac
 
+# if we find a systemd lib, migrate /var/run to /run
+found_systemd=0
+systemd_lib=( /lib/x86_64-linux-gnu/libsystemd.so* /lib64/libsystemd.so* /lib/libsystemd.so* )
+for f in "${systemd_lib[@]}" ; do [ -f "${f}" ] && found_systemd=1 ; done
+[ "${found_systemd}" == 1 ] && {
+  [ -L /var/run ] || {
+    mkdir -p /run
+    for f in /var/run/* ; do
+      [ -e "${i}" ] && mv -f "${i}" /run
+    done
+    rm -rf /var/run
+    ln -sf /run /var/run
+  }
+}
+
 # if we find ourselves, delete ourselves.
 # shellcheck disable=SC2128
 {
