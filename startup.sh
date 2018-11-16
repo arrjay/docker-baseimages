@@ -26,8 +26,8 @@ case "${platform}" in
 
     cd -
 
-    rpm --rebuilddb || { rebuilddbdirs=( /var/lib/rpmrebuilddb.* ) && [ -d "${rebuilddbdirs[0]}" ]
-      mv "${rebuilddbdirs[0]}"/* /var/lib/rpm
+    rpm --rebuilddb || { rebuilddbdirs=( /usr/share/rpmrebuilddb.* ) && [ -d "${rebuilddbdirs[0]}" ]
+      mv "${rebuilddbdirs[0]}"/* /usr/share/rpm
       rmdir "${rebuilddbdirs[0]}"
     }
 
