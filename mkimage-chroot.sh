@@ -102,25 +102,21 @@ create_chroot_tarball () {
       # any RPM calls here should be in our chroot.
       rpm() { sudo rpm --root "${rootdir}" "${@}"; }
     }
-    type debootstrap 2> /dev/null 1>&2 && {
-      __debootstrap="$(which debootstrap)"
-      echo "deboostrap is ${__debootstrap}" 1>&2
-      debootstrap() {
-        # run using our included function set
-        # with a minimal install
-        # for our architecture
-        # with flags as called
-        # in our chroot
-        # using the UBUNTU_URI mirror.
-        sudo DEBOOTSTRAP_DIR="${srcdir}/debootstrap" \
-          bash "${__debootstrap}" \
-            --verbose \
-            --variant=minbase \
-            "--arch=${arch}" \
-            "${@}" \
-            "${rootdir}" \
-            "${UBUNTU_URI}"
-      }
+    debootstrap() {
+       # run using our included function set
+       # with a minimal install
+       # for our architecture
+       # with flags as called
+       # in our chroot
+       # using the UBUNTU_URI mirror.
+       sudo DEBOOTSTRAP_DIR="${srcdir}/debootstrap" \
+         bash "${debootstrap_dir}/debootstrap" \
+           --verbose \
+           --variant=minbase \
+           "--arch=${arch}" \
+           "${@}" \
+           "${rootdir}" \
+          "${UBUNTU_URI}"
     }
     { type dnf 2> /dev/null 1>&2 && {
       echo "using dnf for yum calls" 1>&2
