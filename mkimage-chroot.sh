@@ -118,7 +118,7 @@ create_chroot_tarball () {
            "${rootdir}" \
           "${UBUNTU_URI}"
     }
-    { type dnf 2> /dev/null 1>&2 && {
+    type dnf 2> /dev/null 1>&2 && {
       echo "using dnf for yum calls" 1>&2
       yum() {
         # call with flags to disable weak dependencies
@@ -133,12 +133,9 @@ create_chroot_tarball () {
           -c "${yumconf}" \
           "${@}"
         }
-      }
-      true
-    } ||
-    {
-      # should only run if we did _not_ just set up dnf
-      type yum 2>/dev/null 1>&2 && {
+    }
+    # should only run if we did _not_ just set up dnf
+    [ "$(type -t yum)" == "function" ] || {
       echo "using yum for yum calls" 1>&2
       yum() {
         # manually set release version
@@ -150,7 +147,6 @@ create_chroot_tarball () {
           --installroot="${rootdir}" \
           -c "${yumconf}" \
           "${@}"
-        }
       }
     }
   }
