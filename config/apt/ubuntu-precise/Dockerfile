@@ -1,6 +1,4 @@
-FROM stage2/ubuntu-precise
-
-COPY --from=pki ca-certificates /usr/local/share/ca-certificates/extra
+FROM localhost/stage2/ubuntu-precise
 
 RUN update-ca-certificates
 

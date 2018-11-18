@@ -1,6 +1,4 @@
-FROM stage2/ubuntu-xenial
-
-COPY --from=pki ca-certificates /usr/local/share/ca-certificates/extra
+FROM localhost/stage2/ubuntu-xenial
 
 RUN update-ca-certificates
 

@@ -391,7 +391,6 @@ EOA
 
   # bring it all together
   echo "adding device and configuration tarballs to chroot tarball" 1>&2
-  tar --concatenate --file="${distribution}-${release}-${arch}".tar "${devtar}"
   tar --concatenate --file="${distribution}-${release}-${arch}".tar "${conftar}"
   case "${packagemanager}" in
     yum|dnf)
@@ -404,7 +403,7 @@ EOA
 }
 
 docker_init () {
-  local packagemanager distribution release subdir
+  local packagemanager distribution release subdir import
   subdir="${1}"
   packagemanager="${subdir%/*}"
   packagemanager="${packagemanager#*/}"
@@ -412,23 +411,20 @@ docker_init () {
   release="${distribution#*-}"
   distribution="${distribution%-${release}}"
   echo "importing chroot tarball" 1>&2
-  docker import "${distribution}-${release}-${arch}.tar" "pre/${distribution}-${release}-${arch}"
+  import="$(sudo buildah from scratch)"
+  sudo buildah add "${import}" "${distribution}-${release}-${arch}.tar" /
   rm "${distribution}-${release}-${arch}.tar"
 
   echo "running initial docker setup" 1>&2
-  docker run -i --name "setup_${distribution}-${release}-${arch}" -t "pre/${distribution}-${release}-${arch}" /startup
+  sudo buildah run "${import}" /startup
 
   # FIXME dropping the architecture right here for now
   echo "importing docker-ready image" 1>&2
-  docker export "setup_${distribution}-${release}-${arch}" | docker import - "build/${distribution}-${release}"
-  docker rm "setup_${distribution}-${release}-${arch}"
-  docker rmi "pre/${distribution}-${release}-${arch}"
+  sudo buildah commit "${import}" "build/${distribution}-${release}"
+  sudo buildah rm "${import}"
 
   echo "checking for immediate package updates in image - verifying package manager works" 1>&2
-  docker_check "build/${distribution}-${release}" "${packagemanager}" && {
-    docker tag "build/${distribution}-${release}" "stage2/${distribution}-${release}"
-    docker rmi "build/${distribution}-${release}"
-  }
+  docker_check "build/${distribution}-${release}" "${packagemanager}"
 }
 
 docker_check () {
@@ -438,9 +434,9 @@ docker_check () {
 
   echo "checking for package updates in ${image} using ${packagemanager}" 1>&2
   case "${packagemanager}" in
-    yum|dnf) docker run --rm=true "${image}" "${packagemanager}" check-update ;;
-    zyp) docker run --rm=true "${image}" zypper patch-check ;;
-    apt) docker run --rm=true "${image}" bash -ec '{ export TERM=dumb ; apt-get -q update && apt-get dist-upgrade --assume-no; }' ;;
+    yum|dnf) sudo podman run --rm=true "${image}" "${packagemanager}" check-update ;;
+    zyp) sudo podman run --rm=true "${image}" zypper patch-check ;;
+    apt) sudo podman run --rm=true "${image}" /bin/bash -ec '{ export TERM=dumb ; apt-get -q update && apt-get dist-upgrade --assume-no; }' ;;
     *)   echo "don't know how to ${packagemanager}" 1>&2 ; exit 1 ;;
   esac
 }
@@ -460,16 +456,12 @@ check_existing () {
   else
     [ "${FORCE_BUILD:-}" ] && return 1
     docker_check "${DOCKER_SINK}/${distribution}:${release}" "${packagemanager}" && \
-      docker tag "${DOCKER_SINK}/${distribution}:${release}" "final/${distribution}:${release}"
+      sudo docker tag "${DOCKER_SINK}/${distribution}:${release}" "final/${distribution}:${release}"
   fi
 }
 
-build_pki_layer () {
-  docker build -f "pki/Dockerfile" -t "pki" pki
-}
-
 add_layers () {
-  local packagemanager distribution release subdir stage2name additional_rpms dist_addstr
+  local packagemanager distribution release subdir stage2name additional_rpms dist_addstr newcontainer
   subdir="${1}"
   packagemanager="${subdir%/*}"
   packagemanager="${packagemanager#*/}"
@@ -478,9 +470,18 @@ add_layers () {
   distribution="${distribution%-${release}}"
   additional_rpms=()
 
-  build_pki_layer
+  if [ -f "${subdir}/buildah.stage2" ] ; then
+    newcontainer="$(sudo buildah from "build/${distribution}-${release}")"
+    SCRATCHMOUNT="$(sudo buildah mount "${newcontainer}")"
+    sudo SCRATCHMOUNT="${SCRATCHMOUNT}" bash "${subdir}/buildah.stage2"
+    sudo buildah unmount "${newcontainer}"
+    sudo buildah commit  "${newcontainer}" "stage2/${distribution}-${release}"
+    sudo buildah rm "${newcontainer}"
+  else
+    sudo buildah tag "build/${distribution}-${release}" "stage2/${distribution}-${release}"
+  fi
 
-  stage2name=$(docker images "stage2/${distribution}-${release}" --format "{{.Repository}}")
+  stage2name=$(sudo podman images "stage2/${distribution}-${release}" --format "{{.Repository}}")
 
   if [ ! -z  "${stage2name}" ] ; then
     if [ -f "${subdir}/Dockerfile" ] ; then
@@ -492,11 +493,10 @@ add_layers () {
           [ "${!dist_addstr:-}" ]            && additional_rpms+=("${!dist_addstr}")
         ;;
       esac
-      IFS=' ' docker build -f "${subdir}/Dockerfile" -t "final/${distribution}:${release}" --build-arg ADDITIONAL_RPM_PACKAGES="${additional_rpms[*]}" .
+      IFS=' ' sudo buildah bud -f "${subdir}/Dockerfile" -t "final/${distribution}:${release}" --build-arg ADDITIONAL_RPM_PACKAGES="${additional_rpms[*]}" .
     else
-      docker tag "stage2/${distribution}-${release}" "final/${distribution}:${release}"
+      sudo buildah tag "build/${distribution}-${release}" "final/${distribution}:${release}"
     fi
-    docker rmi "stage2/${distribution}-${release}"
   fi
 }
 

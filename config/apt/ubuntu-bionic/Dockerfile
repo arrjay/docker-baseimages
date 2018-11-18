@@ -1,6 +1,4 @@
-FROM stage2/ubuntu-bionic
-
-COPY --from=pki ca-certificates /usr/local/share/ca-certificates/extra
+FROM localhost/stage2/ubuntu-bionic
 
 RUN update-ca-certificates
 

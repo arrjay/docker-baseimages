@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+cp -R pki/rpm-gpg            "${SCRATCHMOUNT}/etc/pki"
+cp    pki/rpm-gpg-centos-5/* "${SCRATCHMOUNT}/etc/pki/rpm-gpg"
