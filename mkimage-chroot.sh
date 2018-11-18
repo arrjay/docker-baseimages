@@ -164,8 +164,10 @@ create_chroot_tarball () {
       echo "initializing RPM database with system RPM" 1>&2
       rpm --initdb
       echo "importing GPG keys" 1>&2
+      mkdir -p "${rootdir}/etc/pki/rpm-gpg"
       for gpg in "${gpg_keydir}"/* ; do
         rpm --import "${gpg}"
+	cp "${gpg}" "${rootdir}/etc/pki/rpm-gpg"
       done
       echo "installing base packages from configdir" 1>&2
       rpm -iv --nodeps "${subdir}/*.rpm"
