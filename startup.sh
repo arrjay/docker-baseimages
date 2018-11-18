@@ -46,6 +46,10 @@ case "${platform}" in
     }
   ;;
   zypper)
+    echo "importing gpg keys" 1>&2
+    for k in /etc/pki/rpm-gpg/RPM-GPG-KEY-* ; do
+      rpmkeys --import "${k}"
+    done
     echo "verifying package installations" 1>&2
     "${platform}" -n verify
   ;;
