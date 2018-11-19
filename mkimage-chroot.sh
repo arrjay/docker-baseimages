@@ -67,7 +67,7 @@ sudo () { env "$@"; }
 } || echo "your are already root, 'sudo' is env in this script."
 
 create_chroot_tarball () {
-  local packagemanager distribution release subdir __debootstrap debootstrap_file __centos_contentdir
+  local packagemanager distribution release subdir debootstrap_file __centos_contentdir
   local repos_d repos2_d gpg
   subdir="${1}"
   packagemanager="${subdir%/*}"
@@ -254,6 +254,7 @@ create_chroot_tarball () {
       esac
 
       echo "installing system using host debootstrap" 1>&2
+      # shellcheck disable=SC2086
       debootstrap --keyring="${keyring[0]}" ${debootstrap_args} || true
 
       echo "configuring essential packages for in-docker operation" 1>&2
@@ -292,11 +293,13 @@ create_chroot_tarball () {
   ln -s /proc/mounts   "${scratch}"/etc/mtab
   case "${packagemanager}" in
     yum)
+      # shellcheck disable=SC2174
       mkdir -p --mode=0755 "${scratch}"/var/cache/yum
       printf 'NETWORKING=yes\nHOSTNAME=localhost.localdomain\n' > "${scratch}"/etc/sysconfig/network
     ;;
   esac
   cp       startup.sh  "${scratch}"/startup
+  # shellcheck disable=SC2174
   mkdir -p --mode=0755 "${scratch}"/var/cache/ldconfig
   printf '%s\n' "${timestamp}"                              > "${scratch}/etc/stamps.d/base-build.stamp"
   printf '%s\n' "${coderev}"                                > "${scratch}/etc/stamps.d/base-code.stamp"

@@ -90,7 +90,7 @@ for f in "${systemd_lib[@]}" ; do [ -f "${f}" ] && found_systemd=1 ; done
   [ -L /var/run ] || {
     mkdir -p /run
     for f in /var/run/* ; do
-      [ -e "${i}" ] && mv -f "${i}" /run
+      [ -e "${f}" ] && mv -f "${f}" /run
     done
     rm -rf /var/run
     ln -sf /run /var/run
