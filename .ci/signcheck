@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#
+# Validate signatures on only direct commits and merge commits for a particular
+# branch (current branch) on specific files (.[A-Za-z]*)
+##
+
+type git 2>/dev/null || { echo "there is no copy of git installed" 1>&2 ; exit 2 ; }
+
+# if a ref is provided, append range spec to include all children
+chkafter="${1+$1..}"
+
+# note: bash users may instead use $'\t'; the echo statement below is a more
+# portable option (-e is unsupported with /bin/sh)
+t=$( printf '\t' )
+
+# Check every commit after chkafter (or all commits if chkafter was not
+# provided) for a trusted signature, listing invalid commits. %G? will output
+# "G" if the signature is trusted.
+# grep will exit with a non-zero status if no matches are found, which we
+# consider a success, so invert it
+if git log --pretty="format:%H$t%aN$t%s$t%G?" "${chkafter:-HEAD}" --first-parent \
+  .[A-Za-z]* \
+  | grep -v "${t}G$" ; then false ; else true ; fi

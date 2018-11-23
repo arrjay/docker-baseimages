@@ -1,0 +1,15 @@
+# use ubuntu library image until our works
+image: ubuntu:18.04
+
+# any branch tries to build an image
+test:
+  script:
+    - ./prereqs.sh
+    - ./build-images.sh
+
+# but only master will run signing checks and pushes
+master:
+  script:
+    - ./.ci/signcheck
+  only:
+    - master
