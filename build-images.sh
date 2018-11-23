@@ -4,6 +4,7 @@ set -x
 
 # first...who am I? what is this?
 id
+env
 
 # stub in/out docker or libpod equivalents
 [ "${USE_BUILDAH:-}" == true ] && {
