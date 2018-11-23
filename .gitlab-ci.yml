@@ -1,5 +1,7 @@
 # use ubuntu library image until our works
 image: ubuntu:18.04
+services:
+  - docker:dind
 
 # any branch tries to build an image
 test:
