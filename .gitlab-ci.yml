@@ -10,6 +10,7 @@ test:
 # but only master will run signing checks and pushes
 master:
   script:
+    - apt-get update && apt-get -q -y install git
     - ./.ci/signcheck
   only:
     - master
