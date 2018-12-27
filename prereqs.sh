@@ -16,3 +16,6 @@ apt-get -q update
   # use docker.io as shipped with Ubuntu kplzthx
   type docker || apt-get install -q -y docker.io
 }
+
+# debootstrap </3
+type wget || apt-get install -q -y wget
