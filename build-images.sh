@@ -130,3 +130,19 @@ sudo mkdir -p "${temp_chroot}/etc/facter/facts.d"
 
 # hand to docker
 sudo tar cpf - -C "${temp_chroot}" . | docker import - build/pre
+
+# run finalization *in* a docker container
+docker build -t build/init docker
+
+# and create an instance for export
+docker run "--name=image-${CODEREV}-${TIMESTAMP}" build/init true
+
+# export into a new image
+docker export "image-${CODEREV}-${TIMESTAMP}" | docker import - build/release
+
+# clean up the old images
+docker rmi -f build/init
+docker rmi -f build/pre
+
+# clean up the old container
+docker rm -f "image-${CODEREV}-${TIMESTAMP}"
