@@ -16,6 +16,8 @@ test:
 master:
   script:
     - apt-get update && apt-get -q -y install git gpg
+    - gpg --import GPG_SIGNKEY_UNTRUSTEDHOST.asc
+    - echo '993ECF7534158D00B5690725F4961D5C74F7E834:6:' | gpg --import-ownertrust -
     - ./.ci/signcheck
   only:
     - master
