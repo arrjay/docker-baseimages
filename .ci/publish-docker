@@ -30,7 +30,7 @@ push_tags () {
   set +x
   { [ "${DOCKER_LOGIN:-}" ] && [ "${DOCKER_PASSWORD:-}" ] ; } || { echo "missing docker credentials" 1>&2 ; exit 1 ; }
 
-  echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_LOGIN}" "${RELEASE_IMAGE%%/*}"
+  docker login -u "${DOCKER_LOGIN}" -p "${DOCKER_PASSWORD}" "${RELEASE_IMAGE%%/*}"
   set -x
 
   set_tags "${RELEASE_IMAGE}"
@@ -43,7 +43,7 @@ push_tags () {
   set +x
   [ "${CI_JOB_TOKEN:-}" ] || { echo "missing CI_JOB_TOKEN" 1>&2 ; exit 1 ; }
 
-  echo "${CI_JOB_TOKEN}" | docker login -u gitlab-ci-token "${GITLAB_RELEASE_IMAGE%%/*}"
+  docker login -u gitlab-ci-token -p "${CI_JOB_TOKEN}" "${GITLAB_RELEASE_IMAGE%%/*}"
   set -x
 
   set_tags "${GITLAB_RELEASE_IMAGE}"
