@@ -9,7 +9,7 @@ eval "$(docker run --rm=true "${IMAGESOURCE}" cat /etc/facter/facts.d/baseimage.
 
 tags=("latest"
       "${base_image_timestamp}"
-      "${base_image_timestamp}.${base_iamge_coderev}")
+      "${base_image_timestamp}.${base_image_coderev}")
 
 set_tags () {
   local imgpath="${1}"
