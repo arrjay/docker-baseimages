@@ -6,14 +6,17 @@ variables:
   DOCKER_HOST: tcp://docker:2375
   DOCKER_DRIVER: overlay2
 
-# any branch tries to build an image
+# any branch tries to build an image as a test.
 test:
+  stage: test
   script:
     - ./prereqs.sh
     - ./build-images.sh
 
 # but only master will run signing checks and pushes
+# this is flagged as a build stage so it stops the pipeline quickly.
 master:
+  stage: build
   script:
     - apt-get update && apt-get -q -y install git gpg
     - gpg --import GPG_SIGNKEY_UNTRUSTEDHOST.asc
