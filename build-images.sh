@@ -61,7 +61,7 @@ __get_cr () {
 }
 
 # check for needed binaries now
-__check_progs git date env sleep mktemp || exit "${?}"
+__check_progs git date env sleep mktemp docker tar tee wget || exit "${?}"
 
 # we emulate sudo if we're already root
 sudo () { env "$@"; }
@@ -109,7 +109,7 @@ debootstrap () {
   sudo DEBOOTSTRAP_DIR="${PWD}/vendor/debootstrap" \
    bash -x "${PWD}/vendor/debootstrap/debootstrap" \
     --verbose --variant=minbase --arch=amd64 \
-    --foreign --no-merged-usr \
+    --foreign --merged-usr \
     --keyring="${PWD}/ubuntu-archive-keyring.gpg" \
     ${release} \
     ${rootdir} \
@@ -121,4 +121,12 @@ debootstrap () {
 
 temp_chroot="$(debootstrap bionic)"
 
+# insert the build stamps now
+sudo mkdir -p "${temp_chroot}/etc/facter/facts.d"
+{
+  echo "base_image_coderev=${CODEREV}"
+  echo "base_image_timestamp=${TIMESTAMP}"
+} | sudo tee -a "${temp_chroot}/etc/facter/facts.d/baseimage.txt"
+
+# hand to docker
 sudo tar cpf - -C "${temp_chroot}" . | docker import - build/pre
