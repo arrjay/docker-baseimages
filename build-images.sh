@@ -134,10 +134,8 @@ sudo tar cpf - -C "${temp_chroot}" . | docker import - build/pre
 # run finalization *in* a docker container
 docker build -t build/init docker
 
-# and create an instance for export
+# and create an instance for export, flatten via docker | docker pipe
 docker run "--name=image-${CODEREV}-${TIMESTAMP}" build/init true
-
-# export into a new image
 docker export "image-${CODEREV}-${TIMESTAMP}" | docker import - build/release
 
 # clean up the old images
