@@ -32,6 +32,9 @@ RUN chmod 0644 /etc/dpkg/dpkg.cfg.d/*
 # update package indexes _now_
 RUN apt-get update
 
+# install usrmerge...
+RUN apt-get install usrmerge
+
 # preconfigure localepurge, install, run, reconfigure to use deb
 RUN printf '%s\n' "localepurge localepurge/use-dpkg-feature boolean false" \
                   "localepurge localepurge/mandelete boolean true" \
