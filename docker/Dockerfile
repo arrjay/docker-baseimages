@@ -30,7 +30,7 @@ COPY dpkg/dpkg.cfg.d/* /etc/dpkg/dpkg.cfg.d/
 RUN chmod 0644 /etc/dpkg/dpkg.cfg.d/*
 
 # update package indexes _now_
-RUN apt-get -q update
+RUN apt-get update
 
 # preconfigure localepurge, install, run, reconfigure to use deb
 RUN printf '%s\n' "localepurge localepurge/use-dpkg-feature boolean false" \
@@ -41,7 +41,7 @@ RUN printf '%s\n' "localepurge localepurge/use-dpkg-feature boolean false" \
                   "localepurge localepurge/verbose boolean false" \
                   "localepurge localepurge/nopurge string en,en_US,en_US.UTF-8" \
      | debconf-set-selections && \
-    apt-get install -qy localepurge && \
+    apt-get install localepurge && \
     localepurge && \
     echo "localepurge localepurge/use-dpkg-deature boolean true" | debconf-set-selections && \
     dpkg-reconfigure localepurge
@@ -53,12 +53,12 @@ RUN { find /usr/share/doc -depth -type f ! -name copyright|xargs rm || true ; } 
     find /usr/share/locale /usr/share/i18n/locales -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'en_US' -print0 | xargs -0 rm -r
 
 # configure debsums separate
-RUN apt-get install -qy debsums && \
+RUN apt-get install debsums && \
     debsums_init
 
 # install additional packages now, try a dist upgrade
-RUN apt-get install -qy apt-transport-https ca-certificates xz-utils && \
-    apt-get -qy dist-upgrade
+RUN apt-get install apt-transport-https ca-certificates xz-utils && \
+    apt-get dist-upgrade
 
 RUN apt-get clean all && \
     rm -rf /var/lib/apt/lists/*
