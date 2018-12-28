@@ -132,15 +132,29 @@ sudo mkdir -p "${temp_chroot}/etc/facter/facts.d"
 sudo tar cpf - -C "${temp_chroot}" . | docker import - build/pre
 
 # run finalization *in* a docker container
-docker build -t build/init docker
+docker build -t build/debootstrap docker/debootstrap
 
-# and create an instance for export, flatten via docker | docker pipe
-docker run "--name=image-${CODEREV}-${TIMESTAMP}" build/init true
-docker export "image-${CODEREV}-${TIMESTAMP}" | docker import - build/release
+# which we turned back into a chroot for usrmerge :/
+usrmerge_chroot="$(mktemp -d)"
+docker run "--name=debootstrap-${CODEREV}-${TIMESTAMP}" build/debootstrap true
+docker export "debootstrap-${CODEREV}-${TIMESTAMP}" | sudo tar xpf - -C "${usrmerge_chroot}"
+                       sudo rm     "${usrmerge_chroot}/etc/resolv.conf"
+cat /etc/resolv.conf | sudo tee    "${usrmerge_chroot}/etc/resolv.conf"
+                       sudo chroot "${usrmerge_chroot}" env DEBIAN_FRONTEND=noninteractive apt-get install usrmerge
+                       sudo rm     "${usrmerge_chroot}/etc/resolv.conf"
 
-# clean up the old images
-docker rmi -f build/init
+# and then hand *back* to docker!
+sudo tar cpf - -C "${usrmerge_chroot}" . | docker import - build/usrmerge
+docker build -t build/configure docker/configure
+
+# finally, export build/configure and reimport as build/release, flattening the layers again
+docker run "--name=release-${CODEREV}-${TIMESTAMP}" build/configure true
+docker export "release-${CODEREV}-${TIMESTAMP}" | docker import - build/release
+
+# clean up the old images, containers
 docker rmi -f build/pre
-
-# clean up the old container
-docker rm -f "image-${CODEREV}-${TIMESTAMP}"
+docker rmi -f build/debootstrap
+docker rm  -f "debootstrap-${CODEREV}-${TIMESTAMP}"
+docker rmi -f build/usrmerge
+docker rmi -f build/configure
+docker rm  -f "release-${CODEREV}-${TIMESTAMP}" 
