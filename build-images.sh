@@ -124,9 +124,9 @@ temp_chroot="$(debootstrap bionic)"
 # insert the build stamps now
 sudo mkdir -p "${temp_chroot}/etc/facter/facts.d"
 {
-  echo "base_image_coderev=${CODEREV}"
-  echo "base_image_timestamp=${TIMESTAMP}"
-} | sudo tee -a "${temp_chroot}/etc/facter/facts.d/baseimage.txt"
+  echo "${CODEREV_KEY}=${CODEREV}"
+  echo "${TIMESTAMP_KEY}=${TIMESTAMP}"
+} | sudo tee -a "${temp_chroot}/etc/facter/facts.d/${TEXT_FACT_FILE}"
 
 # hand to docker
 sudo tar cpf - -C "${temp_chroot}" . | docker import - build/pre

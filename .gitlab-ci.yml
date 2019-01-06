@@ -7,6 +7,9 @@ variables:
   DOCKER_DRIVER: overlay2
 #  RELEASE_IMAGE:
   GITLAB_RELEASE_IMAGE: registry.gitlab.com/untrustedhost/baseimages/ubuntu
+  TEXT_FACT_FILE: baseimage.txt
+  TIMESTAMP_KEY: base_image_timestamp
+  CODEREV_KEY: base_image_coderev
 
 # any non-master branch tries to build an image as a test.
 test:
@@ -21,7 +24,7 @@ test:
 master:
   stage: build
   script:
-    - ./.ci/signcheck
+    - /usr/local/bin/gitgpgsign_check
   only:
     - master
 
@@ -32,6 +35,6 @@ deploy:
     name: deploy
   script:
     - ./build-images.sh
-    - ./.ci/publish-docker
+    - /usr/local/bin/publish-docker
   only:
     - master
