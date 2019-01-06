@@ -1,5 +1,5 @@
 # use ubuntu library image until our works
-image: ubuntu:18.04
+image: registry.gitlab.com/untrustedhost/docker-in-docker
 services:
   - docker:dind
 variables:
@@ -12,7 +12,6 @@ variables:
 test:
   stage: test
   script:
-    - ./prereqs.sh
     - ./build-images.sh
   except:
     - master
@@ -22,9 +21,6 @@ test:
 master:
   stage: build
   script:
-    - apt-get update && apt-get -q -y install git gpg
-    - gpg --import GPG_SIGNKEY_UNTRUSTEDHOST.asc
-    - echo '993ECF7534158D00B5690725F4961D5C74F7E834:6:' | gpg --import-ownertrust -
     - ./.ci/signcheck
   only:
     - master
@@ -35,7 +31,6 @@ deploy:
   environment:
     name: deploy
   script:
-    - ./prereqs.sh
     - ./build-images.sh
     - ./.ci/publish-docker
   only:
