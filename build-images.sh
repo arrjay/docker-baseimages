@@ -77,6 +77,7 @@ sudo () { env "$@"; }
 } || echo "your are already root, 'sudo' is env in this script."
 
 # derive build stamps here
+[ -n "${CODEBASE}" ] || { __fail_msg "CODEBASE not set" ; }
 CODEREV="$(__get_cr)"
 TIMESTAMP="$(date +%s)"
 
@@ -124,9 +125,9 @@ temp_chroot="$(debootstrap bionic)"
 # insert the build stamps now
 sudo mkdir -p "${temp_chroot}/etc/facter/facts.d"
 {
-  echo "${CODEREV_KEY}=${CODEREV}"
-  echo "${TIMESTAMP_KEY}=${TIMESTAMP}"
-} | sudo tee -a "${temp_chroot}/etc/facter/facts.d/${TEXT_FACT_FILE}"
+  echo "${CODEBASE}_image_coderev=${CODEREV}"
+  echo "${CODEBASE}_image_timestamp=${TIMESTAMP}"
+} | sudo tee -a "${temp_chroot}/etc/facter/facts.d/${CODEBASE}.txt"
 
 # hand to docker
 sudo tar cpf - -C "${temp_chroot}" . | docker import - build/pre
