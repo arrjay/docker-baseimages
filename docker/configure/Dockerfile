@@ -43,3 +43,6 @@ RUN apt-get clean all && \
 # and of course, undo any in-docker hackery
 RUN rm /usr/bin/ischroot && dpkg-divert --rename --remove /usr/bin/ischroot && \
     rm /usr/sbin/invoke-rc.d && dpkg-divert --rename --remove /usr/sbin/invoke-rc.d
+
+# finally, bundle scripts for downstreams
+ADD scripts/ /scripts
