@@ -13,7 +13,7 @@ variables:
 test:
   stage: test
   script:
-    - ./build-images.sh
+    - ./build.sh
   except:
     - master
 
@@ -32,7 +32,7 @@ deploy:
   environment:
     name: deploy
   script:
-    - ./build-images.sh
+    - ./build.sh
     - /scripts/publish-docker
   only:
     - master

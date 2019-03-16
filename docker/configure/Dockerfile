@@ -35,7 +35,7 @@ RUN apt-get install debsums && \
     debsums_init
 
 # install additional packages now, try a dist upgrade
-RUN apt-get install apt-transport-https ca-certificates xz-utils && \
+RUN apt-get install apt-transport-https ca-certificates xz-utils gnupg && \
     apt-get dist-upgrade
 
 # finally, clean up anything apt left about
