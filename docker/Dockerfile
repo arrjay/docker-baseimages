@@ -1,3 +1,4 @@
+# handoff from build.sh script so far
 FROM build/usrmerge
 
 # shut up, apt
@@ -48,3 +49,7 @@ RUN rm /usr/bin/ischroot && dpkg-divert --rename --remove /usr/bin/ischroot && \
 
 # finally, bundle scripts for downstreams
 ADD scripts/ /scripts
+
+# and add build stamps
+ADD facts.d /etc/facter/facts.d
+RUN chmod 0644 /etc/facter/facts.d/*

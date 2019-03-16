@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eux
+set -eu
 
 # first...who am I? what is this?
 id
@@ -108,7 +108,7 @@ debootstrap () {
   rootdir="$(mktemp -d)"
   release="${1}"
   sudo DEBOOTSTRAP_DIR="${PWD}/vendor/debootstrap" \
-   bash -x "${PWD}/vendor/debootstrap/debootstrap" \
+   bash "${PWD}/vendor/debootstrap/debootstrap" \
     --verbose --variant=minbase --arch=amd64 \
     --foreign --merged-usr \
     --keyring="${PWD}/ubuntu-archive-keyring.gpg" \
@@ -123,17 +123,16 @@ debootstrap () {
 temp_chroot="$(debootstrap bionic)"
 
 # insert the build stamps now
-sudo mkdir -p "${temp_chroot}/etc/facter/facts.d"
 {
   echo "${CODEBASE}_image_coderev=${CODEREV}"
   echo "${CODEBASE}_image_timestamp=${TIMESTAMP}"
-} | sudo tee -a "${temp_chroot}/etc/facter/facts.d/${CODEBASE}.txt"
+} > "docker/facts.d/${CODEBASE}.txt"
 
 # hand to docker
 sudo tar cpf - -C "${temp_chroot}" . | docker import - build/pre
 
 # run finalization *in* a docker container
-docker build -t build/debootstrap docker/debootstrap
+docker build -t build/debootstrap docker-debootstrap-finalize
 
 # which we turned back into a chroot for usrmerge :/
 usrmerge_chroot="$(mktemp -d)"
@@ -149,7 +148,7 @@ cat /etc/resolv.conf | sudo tee    "${usrmerge_chroot}/etc/resolv.conf"
 
 # and then hand *back* to docker!
 sudo tar cpf - -C "${usrmerge_chroot}" . | docker import - build/usrmerge
-docker build -t build/configure docker/configure
+docker build -t build/configure docker
 
 # finally, export build/configure and reimport as build/release, flattening the layers again
 docker run "--name=release-${CODEREV}-${TIMESTAMP}" build/configure true
