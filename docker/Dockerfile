@@ -47,6 +47,9 @@ RUN apt-get clean all && \
 RUN rm /usr/bin/ischroot && dpkg-divert --rename --remove /usr/bin/ischroot && \
     rm /usr/sbin/invoke-rc.d && dpkg-divert --rename --remove /usr/sbin/invoke-rc.d
 
+# replace /opt with symlink to /var/opt
+RUN rmdir /opt && ln -sf ./var/opt /opt
+
 # finally, bundle scripts for downstreams
 RUN mkdir -p /usr/lib/untrustedhost
 ADD scripts /usr/lib/untrustedhost/scripts
