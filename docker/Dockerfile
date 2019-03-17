@@ -48,8 +48,13 @@ RUN rm /usr/bin/ischroot && dpkg-divert --rename --remove /usr/bin/ischroot && \
     rm /usr/sbin/invoke-rc.d && dpkg-divert --rename --remove /usr/sbin/invoke-rc.d
 
 # finally, bundle scripts for downstreams
-ADD scripts/ /scripts
+RUN mkdir -p /usr/lib/untrustedhost
+ADD scripts /usr/lib/untrustedhost/scripts
+
+# preconfigure facter...
+RUN mkdir -p /etc/puppetlabs
+ADD facter /etc/puppetlabs/facter
 
 # and add build stamps
-ADD facts.d /etc/facter/facts.d
-RUN chmod 0644 /etc/facter/facts.d/*
+ADD facts.d /usr/lib/untrustedhost/facts.d
+RUN chmod 0644 /usr/lib/untrustedhost/facts.d/*

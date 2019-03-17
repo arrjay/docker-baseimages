@@ -22,7 +22,7 @@ test:
 master:
   stage: build
   script:
-    - /scripts/gitgpgsign_check
+    - /usr/lib/untrustedhost/scripts/gitgpgsign_check
   only:
     - master
 
@@ -33,6 +33,6 @@ deploy:
     name: deploy
   script:
     - ./build.sh
-    - /scripts/publish-docker
+    - /usr/lib/untrustedhost/scripts/publish-docker
   only:
     - master
