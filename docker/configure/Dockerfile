@@ -9,13 +9,15 @@ RUN dpkg-divert --rename /usr/bin/ischroot && ln -s /bin/true /usr/bin/ischroot 
     echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections
 
 # preconfigure localepurge, install, run, reconfigure to use deb
-RUN printf '%s\n' "localepurge localepurge/use-dpkg-feature boolean false" \
+RUN libssl=$(dpkg -l | grep libssl | awk '{print $2}') \
+ && printf '%s\n' "localepurge localepurge/use-dpkg-feature boolean false" \
                   "localepurge localepurge/mandelete boolean true" \
                   "localepurge localepurge/dontbothernew boolean true" \
                   "localepurge localepurge/showfreedspace boolean false" \
                   "localepurge localepurge/quickndirtycale boolean true" \
                   "localepurge localepurge/verbose boolean false" \
                   "localepurge localepurge/nopurge string en,en_US,en_US.UTF-8" \
+                  "${libssl} libraries/restart-without-asking boolean true" \
      | debconf-set-selections && \
     apt-get install localepurge && \
     localepurge && \
