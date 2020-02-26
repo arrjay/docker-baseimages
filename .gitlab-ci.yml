@@ -1,7 +1,7 @@
 # use ubuntu library image until our works
 image: registry.gitlab.com/untrustedhost/docker-in-docker
 services:
-  - docker:dind
+  - docker:19.03.5-dind
 variables:
   DOCKER_HOST: tcp://docker:2375
   DOCKER_DRIVER: overlay2
