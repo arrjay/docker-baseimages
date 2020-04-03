@@ -139,6 +139,9 @@ docker build -t build/debootstrap docker/debootstrap
 usrmerge_chroot="$(mktemp -d)"
 docker run "--name=debootstrap-${CODEREV}-${TIMESTAMP}" build/debootstrap true
 docker export "debootstrap-${CODEREV}-${TIMESTAMP}" | sudo tar xpf - -C "${usrmerge_chroot}"
+                          mkdir -p "${usrmerge_chroot}/etc/systemd/system"
+       sudo cp -R systemd-system/* "${usrmerge_chroot}/etc/systemd/system"
+           sudo chown -R root:root "${usrmerge_chroot}/etc/systemd/system"
                        sudo rm     "${usrmerge_chroot}/etc/resolv.conf"
 cat /etc/resolv.conf | sudo tee    "${usrmerge_chroot}/etc/resolv.conf"
                        sudo chroot "${usrmerge_chroot}" env DEBIAN_FRONTEND=noninteractive apt-get install usrmerge
