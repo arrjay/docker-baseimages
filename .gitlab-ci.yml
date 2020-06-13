@@ -15,16 +15,16 @@ test:
   script:
     - ./build.sh
   except:
-    - master
+    - mainline
 
 # but only master will run signing checks and pushes
 # this is flagged as a build stage so it stops the pipeline quickly.
-master:
+mainline:
   stage: build
   script:
     - /usr/lib/untrustedhost/scripts/gitgpgsign_check
   only:
-    - master
+    - mainline
 
 # duplicated from test, mostly.
 deploy:
@@ -35,4 +35,4 @@ deploy:
     - ./build.sh
     - /usr/lib/untrustedhost/scripts/publish-docker
   only:
-    - master
+    - mainline
