@@ -9,7 +9,7 @@ variables:
   GITLAB_RELEASE_IMAGE: registry.gitlab.com/untrustedhost/baseimages/ubuntu
   CODEBASE: base
 
-# any non-master branch tries to build an image as a test.
+# any non-mainline branch tries to build an image as a test.
 test:
   stage: test
   script:
@@ -17,7 +17,7 @@ test:
   except:
     - mainline
 
-# but only master will run signing checks and pushes
+# but only mainline will run signing checks and pushes
 # this is flagged as a build stage so it stops the pipeline quickly.
 mainline:
   stage: build
