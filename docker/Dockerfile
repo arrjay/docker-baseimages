@@ -22,7 +22,7 @@ RUN libssl=$(dpkg -l | grep libssl | awk '{print $2}') \
      | debconf-set-selections && \
     apt-get install localepurge && \
     localepurge && \
-    echo "localepurge localepurge/use-dpkg-deature boolean true" | debconf-set-selections && \
+    echo "localepurge localepurge/use-dpkg-feature boolean true" | debconf-set-selections && \
     dpkg-reconfigure localepurge
 
 # eat the existing docs and i18n
