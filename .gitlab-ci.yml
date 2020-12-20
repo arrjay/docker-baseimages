@@ -8,12 +8,14 @@ variables:
 #  RELEASE_IMAGE:
   GITLAB_RELEASE_IMAGE: registry.gitlab.com/untrustedhost/baseimages/ubuntu
   CODEBASE: base
+  DEFAULT_VARIANT: bionic
+  VARIANTS: bionic focal
 
 # any non-mainline branch tries to build an image as a test.
 test:
   stage: test
   script:
-    - ./build.sh
+    - bash -ec 'for v in $VARIANTS ; do VERSION_CODENAME=$v ./build.sh ; done'
   except:
     - mainline
 
@@ -32,7 +34,7 @@ deploy:
   environment:
     name: deploy
   script:
-    - ./build.sh
-    - /usr/lib/untrustedhost/scripts/publish-docker
+    - bash -ec 'for v in $VARIANTS ; do VERSION_CODENAME=$v ./build.sh ; done'
+    - bash -ec 'for v in $VARIANTS ; do "IMAGESOURCE=build/$v/release" "VARIANT=$v" /usr/lib/untrustedhost/scripts/publish-docker ; done'
   only:
     - mainline
