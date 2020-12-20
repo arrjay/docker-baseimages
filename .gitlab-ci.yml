@@ -35,6 +35,6 @@ deploy:
     name: deploy
   script:
     - bash -ec 'for v in $VARIANTS ; do VERSION_CODENAME=$v ./build.sh ; done'
-    - bash -ec 'for v in $VARIANTS ; do "IMAGESOURCE=build/$v/release" "VARIANT=$v" /usr/lib/untrustedhost/scripts/publish-docker ; done'
+    - bash -ec 'for v in $VARIANTS ; do IMAGESOURCE="build/$v/release" VARIANT="$v" /usr/lib/untrustedhost/scripts/publish-docker ; done'
   only:
     - mainline
