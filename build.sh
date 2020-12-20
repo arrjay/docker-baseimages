@@ -143,7 +143,7 @@ docker export "debootstrap-${CODEREV}-${TIMESTAMP}" | sudo tar xpf - -C "${usrme
            sudo chown -R root:root "${usrmerge_chroot}/etc/systemd/system"
                        sudo rm     "${usrmerge_chroot}/etc/resolv.conf"
 cat /etc/resolv.conf | sudo tee    "${usrmerge_chroot}/etc/resolv.conf"
-                       sudo chroot "${usrmerge_chroot}" env DEBIAN_FRONTEND=noninteractive apt-get install usrmerge
+                       sudo chroot "${usrmerge_chroot}" env PATH=/usr/bin:/bin:/usr/sbin:/sbin DEBIAN_FRONTEND=noninteractive apt-get install usrmerge
                        sudo rm     "${usrmerge_chroot}/etc/resolv.conf"
 
 # and then hand *back* to docker!

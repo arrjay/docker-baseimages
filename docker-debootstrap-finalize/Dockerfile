@@ -17,6 +17,7 @@ RUN rm /var/log/bootstrap.log
 # init sources.list for all repos now. we just had the base before.
 COPY apt/sources.list /etc/apt/sources.list
 RUN chmod 0644 /etc/apt/sources.list
+RUN bash -c '. /etc/os-release && sed -i -e "s/CODENAME/${VERSION_CODENAME}/g" /etc/apt/sources.list'
 
 # reference: https://wiki.ubuntu.com/ReducingDiskFootprint
 

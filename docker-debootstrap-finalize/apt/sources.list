@@ -1,5 +1,5 @@
-deb http://us.archive.ubuntu.com/ubuntu/ bionic main universe 
-deb http://us.archive.ubuntu.com/ubuntu/ bionic-security main universe 
-deb http://us.archive.ubuntu.com/ubuntu/ bionic-updates main universe 
+deb http://us.archive.ubuntu.com/ubuntu/ CODENAME main universe 
+deb http://us.archive.ubuntu.com/ubuntu/ CODENAME-security main universe 
+deb http://us.archive.ubuntu.com/ubuntu/ CODENAME-updates main universe 
 
 
