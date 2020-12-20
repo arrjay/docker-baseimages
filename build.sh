@@ -32,6 +32,7 @@ _buildah_status
 
 # tuneables
 [ "${UBUNTU_URI:=}" ] || UBUNTU_URI=https://mirrors.kernel.org/ubuntu/
+[ "${VERSION_CODENAME:=}" ] || VERSION_CODENAME=bionic
 
 __warn_msg () { echo "${@}" 1>&2 ; }
 
@@ -120,7 +121,7 @@ debootstrap () {
   return "${rc}"
 }
 
-temp_chroot="$(debootstrap bionic)"
+temp_chroot="$(debootstrap ${VERSION_CODENAME})"
 
 # insert the build stamps now
 {
@@ -152,7 +153,7 @@ docker build -t build/configure docker
 
 # finally, export build/configure and reimport as build/release, flattening the layers again
 docker run "--name=release-${CODEREV}-${TIMESTAMP}" build/configure true
-docker export "release-${CODEREV}-${TIMESTAMP}" | docker import - build/release
+docker export "release-${CODEREV}-${TIMESTAMP}" | docker import - "build/${VERSION_CODENAME}/release"
 
 # clean up the old images, containers
 docker rmi -f build/pre
