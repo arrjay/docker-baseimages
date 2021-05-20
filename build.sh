@@ -44,7 +44,7 @@ case "${ARCH}" in
 esac
 
 filt=('cat')
-[[ "${qemu_bin}" ]] && filt=('bsdtar' '-cf' '-' "--exclude=${qemu_bin#/}" '@-')
+[[ "${qemu_bin:=}" ]] && filt=('bsdtar' '-cf' '-' "--exclude=${qemu_bin#/}" '@-')
 
 __warn_msg () { echo "${@}" 1>&2 ; }
 
@@ -126,9 +126,9 @@ debootstrap () {
     --verbose --variant=minbase "--arch=${arch}" \
     --foreign --merged-usr \
     --keyring="${PWD}/ubuntu-archive-keyring.gpg" \
-    ${release} \
-    ${rootdir} \
-    ${UBUNTU_URI} 1>&2
+    "${release}" \
+    "${rootdir}" \
+    "${UBUNTU_URI}" 1>&2
   rc="${?}"
   echo "${rootdir}"
   return "${rc}"
@@ -136,7 +136,7 @@ debootstrap () {
 
 temp_chroot="$(debootstrap "${VERSION_CODENAME}" "${ARCH}")"
 
-[[ "${qemu_bin}" ]] && {
+[[ "${qemu_bin:=}" ]] && {
   install -v -m0755 "${qemu_bin}" "${temp_chroot}/${qemu_bin}"
 }
 
@@ -160,7 +160,8 @@ docker export "debootstrap-${CODEREV}-${TIMESTAMP}" | sudo tar xpf - -C "${usrme
        sudo cp -R systemd-system/* "${usrmerge_chroot}/etc/systemd/system"
            sudo chown -R root:root "${usrmerge_chroot}/etc/systemd/system"
                        sudo rm     "${usrmerge_chroot}/etc/resolv.conf"
-cat /etc/resolv.conf | sudo tee    "${usrmerge_chroot}/etc/resolv.conf"
+		       # shellcheck disable=SC2024
+                       sudo tee    "${usrmerge_chroot}/etc/resolv.conf" < /etc/resolv.conf
                        sudo chroot "${usrmerge_chroot}" env PATH=/usr/bin:/bin:/usr/sbin:/sbin DEBIAN_FRONTEND=noninteractive apt-get install usrmerge
                        sudo rm     "${usrmerge_chroot}/etc/resolv.conf"
 
