@@ -31,8 +31,20 @@ _podman_images
 _buildah_status
 
 # tuneables
-[ "${UBUNTU_URI:=}" ] || UBUNTU_URI=https://mirrors.kernel.org/ubuntu/
 [ "${VERSION_CODENAME:=}" ] || VERSION_CODENAME=bionic
+[ "${ARCH:=}" ] || ARCH=amd64
+case "${ARCH}" in
+  arm*) [ "${UBUNTU_URI:=}" ] || UBUNTU_URI=http://ports.ubuntu.com/ubuntu-ports/
+      case "${ARCH}" in
+        arm64) qemu_bin="$(command -v qemu-aarch64-static)" ;;
+        armhf) qemu_bin="$(command -v qemu-arm-static)"     ;;
+      esac
+    ;;
+  *)    [ "${UBUNTU_URI:=}" ] || UBUNTU_URI=https://mirrors.kernel.org/ubuntu/ ;;
+esac
+
+filt=('cat')
+[[ "${qemu_bin}" ]] && filt=('bsdtar' '-cf' '-' "--exclude=${qemu_bin#/}" '@-')
 
 __warn_msg () { echo "${@}" 1>&2 ; }
 
@@ -108,9 +120,10 @@ debootstrap () {
   local rootdir release rc
   rootdir="$(mktemp -d)"
   release="${1}"
+  arch="${2:-amd64}"
   sudo DEBOOTSTRAP_DIR="${PWD}/vendor/debootstrap" \
    bash "${PWD}/vendor/debootstrap/debootstrap" \
-    --verbose --variant=minbase --arch=amd64 \
+    --verbose --variant=minbase "--arch=${arch}" \
     --foreign --merged-usr \
     --keyring="${PWD}/ubuntu-archive-keyring.gpg" \
     ${release} \
@@ -121,7 +134,11 @@ debootstrap () {
   return "${rc}"
 }
 
-temp_chroot="$(debootstrap ${VERSION_CODENAME})"
+temp_chroot="$(debootstrap "${VERSION_CODENAME}" "${ARCH}")"
+
+[[ "${qemu_bin}" ]] && {
+  install -v -m0755 "${qemu_bin}" "${temp_chroot}/${qemu_bin}"
+}
 
 # insert the build stamps now
 {
@@ -153,7 +170,7 @@ docker build -t build/configure docker
 
 # finally, export build/configure and reimport as build/release, flattening the layers again
 docker run "--name=release-${CODEREV}-${TIMESTAMP}" build/configure true
-docker export "release-${CODEREV}-${TIMESTAMP}" | docker import - "build/${VERSION_CODENAME}/release"
+docker export "release-${CODEREV}-${TIMESTAMP}" | "${filt[@]}" | docker import - "build/${VERSION_CODENAME}/release"
 
 # clean up the old images, containers
 docker rmi -f build/pre

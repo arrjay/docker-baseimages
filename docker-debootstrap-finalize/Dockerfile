@@ -18,6 +18,8 @@ RUN rm /var/log/bootstrap.log
 COPY apt/sources.list /etc/apt/sources.list
 RUN chmod 0644 /etc/apt/sources.list
 RUN bash -c '. /etc/os-release && sed -i -e "s/CODENAME/${UBUNTU_CODENAME}/g" /etc/apt/sources.list'
+# hack.
+RUN bash -c 'uname -m | grep -q 86 || sed -i -e "s@us.archive.ubuntu.com/ubuntu/@ports.ubuntu.com/ubuntu-ports/@g" /etc/apt/sources.list'
 
 # reference: https://wiki.ubuntu.com/ReducingDiskFootprint
 
