@@ -92,6 +92,12 @@ create_chroot_tarball () {
     *) echo "unknown packagemanager" 1>&2 ; exit 240 ;;
   esac
 
+  # handle *really* old ubuntu releases
+  case "${release}" in
+    precise) UBUNTU_URI=https://old-releases.ubuntu.com/ubuntu/ ;;
+    trusty)  UBUNTU_URI=http://archive.ubuntu.com/ubuntu/      ;;
+  esac
+
   # reread arch at this point, in case we are building for...not x86_64/amd64.
   [ -f "${subdir}/arch" ] && read -r arch < "${subdir}/arch"
 
