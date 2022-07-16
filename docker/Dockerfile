@@ -4,6 +4,9 @@ FROM build/usrmerge
 # shut up, apt
 ENV DEBIAN_FRONTEND=noninteractive
 
+# force a sane path in here
+ENV PATH=/usr/bin:/bin:/usr/sbin:/sbin
+
 # work around maintainer scripts not realizing you're _in docker_ ;)
 RUN dpkg-divert --rename /usr/bin/ischroot && ln -s /bin/true /usr/bin/ischroot && \
     dpkg-divert --rename /usr/sbin/invoke-rc.d && ln -s /bin/true /usr/sbin/invoke-rc.d && \
