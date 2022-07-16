@@ -36,7 +36,7 @@ COPY dpkg/dpkg.cfg.d/* /etc/dpkg/dpkg.cfg.d/
 RUN chmod 0644 /etc/dpkg/dpkg.cfg.d/*
 
 # update package indexes _now_
-RUN apt-get update
+RUN apt-get update || { ls -lR / ; exit 1; }
 
 # usrmerge depends on libfile-find-rule-perl (for bionic at least) - install now
 RUN apt-get install libfile-find-rule-perl
