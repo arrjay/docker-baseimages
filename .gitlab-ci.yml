@@ -8,8 +8,8 @@ variables:
 #  RELEASE_IMAGE:
   GITLAB_RELEASE_IMAGE: registry.gitlab.com/untrustedhost/baseimages/ubuntu
   CODEBASE: base
-  DEFAULT_VARIANT: jammy
-  VARIANTS: jammy
+  DEFAULT_VARIANT: focal
+  VARIANTS: bionic focal jammy
 
 # any non-mainline branch tries to build an image as a test.
 test:
