@@ -31,9 +31,13 @@ RUN { find /usr/share/doc -depth -type f ! -name copyright|xargs rm || true ; } 
     rm -rf /usr/share/man /usr/share/groff /usr/share/info /usr/share/lintian /usr/share/linda /var/cache/man ; \
     find /usr/share/locale /usr/share/i18n/locales -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'en_US' -print0 | xargs -0 rm -r
 
+# scripts for us and downstreams
+RUN mkdir -p /usr/lib/untrustedhost
+ADD scripts /usr/lib/untrustedhost/scripts
+
 # configure debsums separate
 RUN apt-get install debsums && \
-    debsums_init
+    /usr/lib/untrustedhost/scripts/debsums_init
 
 # install additional packages now, try a dist upgrade
 RUN apt-get install apt-transport-https ca-certificates xz-utils gnupg && \
@@ -49,10 +53,6 @@ RUN rm /usr/bin/ischroot && dpkg-divert --rename --remove /usr/bin/ischroot && \
 
 # replace /opt with symlink to /var/opt
 RUN rmdir /opt && ln -sf ./var/opt /opt
-
-# finally, bundle scripts for downstreams
-RUN mkdir -p /usr/lib/untrustedhost
-ADD scripts /usr/lib/untrustedhost/scripts
 
 # preconfigure facter...
 RUN mkdir -p /etc/puppetlabs
