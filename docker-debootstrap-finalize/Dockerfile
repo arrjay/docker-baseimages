@@ -12,7 +12,7 @@ RUN dpkg-divert --rename /usr/bin/ischroot && ln -s /bin/true /usr/bin/ischroot 
     echo "resolvconf resolvconf/linkify-resolvconf boolean false" | debconf-set-selections
 
 # finish debootstrap here
-RUN DEBOOTSTRAP_DIR=/debootstrap /debootstrap/debootstrap --second-stage --merged-usr || { cat /debootstrap/debootstrap.log ; ls -lR / ; exit 1; }
+RUN DEBOOTSTRAP_DIR=/debootstrap /usr/bin/bash /debootstrap/debootstrap --second-stage --merged-usr || { cat /debootstrap/debootstrap.log ; ls -lR / ; exit 1; }
 
 # clean up debootstrap
 RUN rm /var/log/bootstrap.log
