@@ -506,8 +506,6 @@ add_layers () {
   distribution="${distribution%-${release}}"
   additional_rpms=()
 
-  build_pki_layer
-
   stage2name=$(docker images "stage2/${distribution}-${release}" --format "{{.Repository}}")
 
   if [ ! -z  "${stage2name}" ] ; then
