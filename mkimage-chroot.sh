@@ -304,14 +304,22 @@ create_chroot_tarball () {
   esac
   cp       startup.sh  "${scratch}"/startup
   mkdir -p --mode=0755 "${scratch}"/var/cache/ldconfig
+  mkdir -p --mode=0755 "${scratch}"/usr/lib/untrustedhost/facts.d
   printf '%s\n' "${timestamp}"                              > "${scratch}/etc/stamps.d/base-build.stamp"
   printf '%s\n' "${coderev}"                                > "${scratch}/etc/stamps.d/base-code.stamp"
+  {
+    printf '%s_image_timestamp=%s\n' "${CODEBASE}" "${timestamp}"
+    printf '%s_image_coderev=%s\n'   "${CODEBASE}" "${coderev}"
+  } > "${scratch}/usr/lib/untrustedhost/facts.d/${CODEBASE}.txt"
+  install -D docker/facter/facter.conf "${scratch}/etc/puppetlabs/facter/facter.conf"
   printf '127.0.0.1   localhost localhost.localdomain\n'    > "${scratch}/etc/hosts"
   tar --numeric-owner --group=0 --owner=0 -c -C "${scratch}" --files-from=- -f "${conftar}" 2>/dev/null << EOA || true
 ./etc/mtab
 ./etc/hosts
 ./etc/stamps.d/base-build.stamp
 ./etc/stamps.d/base-code.stamp
+./usr/lib/untrustedhost/facts.d/${CODEBASE}.txt
+./etc/puppetlabs/facter/facter.conf
 ./etc/sysconfig/network
 ./var/cache/yum
 ./var/cache/ldconfig

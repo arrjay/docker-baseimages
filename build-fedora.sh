@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-exec ./mkimage-chroot.sh config/dnf/fedora-"${1}"
+exec ./mkimage-chroot.sh config/dnf/fedora-"${FEDORA_VER}"
