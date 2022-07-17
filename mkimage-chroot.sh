@@ -173,7 +173,7 @@ create_chroot_tarball () {
       mkdir -p "${rootdir}/etc/pki/rpm-gpg"
       for gpg in "${gpg_keydir}"/* ; do
         rpm --import "${gpg}"
-	cp "${gpg}" "${rootdir}/etc/pki/rpm-gpg"
+        cp "${gpg}" "${rootdir}/etc/pki/rpm-gpg"
       done
       echo "installing base packages from configdir" 1>&2
       rpm -iv --nodeps "${subdir}/*.rpm"
@@ -221,7 +221,7 @@ create_chroot_tarball () {
           echo "${__centos_contentdir}" | sudo tee "${rootdir}/etc/yum/vars/contentdir" > /dev/null
         ;;
         fedora*)
-          inst_packages=("@Minimal Install" dnf fedora-release fedora-release-notes fedora-gpg-keys)
+          inst_packages=("@Minimal Install" dnf fedora-release fedora-gpg-keys)
         ;;
         opensuse*)
           inst_packages=(bash glibc rpm zypper)
@@ -328,7 +328,7 @@ EOA
   # shellcheck disable=SC1091
   os_like=$(. /etc/os-release ; echo "${ID_LIKE:-}")
   case "${os_like}" in
-    debian) rpmdbdir="${HOME}/.rpmdb" ;;
+    debian) rpmdbdir="/root/.rpmdb" ;;
     *)      rpmdbdir="/var/lib/rpm" ;;
   esac
 
@@ -339,15 +339,25 @@ EOA
       tar --list --file="${distribution}-${release}-${arch}.tar" | \
        grep "^.${rpmdbdir}" | grep -v '/$' | tee "${rpmdbfiles}" > /dev/null
 
-      rpmdb_dump="/usr/lib/rpm/rpmdb_dump"
-      [ -e "${rpmdb_dump}" ] || {
-        libdb="$(ldd "$(which rpm)"|grep libdb|cut -d= -f1)"
-        libdb="${libdb#"${libdb%%[![:space:]]*}"}"
-        libdb="${libdb%"${libdb##*[![:space:]]}"}"
-        libdb="${libdb#*-}"
-        libdb="${libdb%.so}"
-        rpmdb_dump="db${libdb}_dump"
-      }
+      rpmdb_backend="$(rpm --eval '%_db_backend')"
+      rpmdb_dump="NO"
+      case "${rpmdb_backend}" in
+        "bdb")
+          rpmdb_dump="/usr/lib/rpm/rpmdb_dump"
+          [ -e "${rpmdb_dump}" ] || {
+            libdb="$(ldd "$(which rpm)"|grep libdb|cut -d= -f1)"
+            libdb="${libdb#"${libdb%%[![:space:]]*}"}"
+            libdb="${libdb%"${libdb##*[![:space:]]}"}"
+            libdb="${libdb#*-}"
+            libdb="${libdb%.so}"
+            rpmdb_dump="db${libdb}_dump"
+          }
+        ;;
+        "sqlite")
+          :
+        ;;
+      esac
+
       rpmdb_extract_dir=$(mktemp -d --tmpdir "$(basename "$0")".XXXXXX)
       rpmdb_dumpfiles=$(mktemp --tmpdir "$(basename "$0")".rpmdbdump.XXXXXX)
       # first, pry the rpmdb out.
@@ -355,10 +365,22 @@ EOA
       mkdir -p "${rpmdb_extract_dir}${target_rpmdbdir}"
       # convert db files to dump files
       for x in "${rpmdb_extract_dir}${rpmdbdir}"/* ; do
-        dumpfile="$(basename "${x}").dump"
-        "${rpmdb_dump}" "${x}" > "${rpmdb_extract_dir}${target_rpmdbdir}/${dumpfile}"
-        echo ".${target_rpmdbdir}/${dumpfile}" >> "${rpmdb_dumpfiles}"
-        rm "${x}"
+        case "${rpmdb_dump}" in
+          # sqlite case, we copy the file over...
+          "NO")
+            destfn="$(basename "${x}")"
+            cp "${x}" "${rpmdb_extract_dir}${target_rpmdbdir}/${destfn}"
+            echo ".${target_rpmdbdir}/${destfn}" >> "${rpmdb_dumpfiles}"
+            rm "${x}"
+          ;;
+          # bdb case needs an unpack of the file.
+          *)
+            dumpfile="$(basename "${x}").dump"
+            "${rpmdb_dump}" "${x}" > "${rpmdb_extract_dir}${target_rpmdbdir}/${dumpfile}"
+            echo ".${target_rpmdbdir}/${dumpfile}" >> "${rpmdb_dumpfiles}"
+            rm "${x}"
+          ;;
+        esac
       done
 
       tar --numeric-owner --group=0 --owner=0 -C "${rpmdb_extract_dir}" --create \

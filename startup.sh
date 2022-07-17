@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ex
 
 export DEBIAN_FRONTEND=noninteractive
 
@@ -13,22 +13,27 @@ echo "detected platform ${platform}" 1>&2
 
 case "${platform}" in
   yum|dnf)
-    echo "rebuilding rpm db" 1>&2
-    # bring RPM back online from export so it works in chroot.
+    # bring RPM back online from export so it works in chroot. bdb only...
+    # do we...have dump files?
     dbpath=$(rpm --eval '%_dbpath')
-    cd "${dbpath}"
+    dfiles=("${dbpath}"/*.dump)
+    [[ -e "${dfiles}" ]] && {
+      echo "rebuilding rpm db" 1>&2
 
-    for x in *.dump ; do
-      dest="$(basename "${x}" .dump)"
-      /usr/lib/rpm/rpmdb_load "${dest}" < "${x}"
-      rm "${x}"
-    done
+      cd "${dbpath}"
 
-    cd -
+      for x in *.dump ; do
+        dest="$(basename "${x}" .dump)"
+        /usr/lib/rpm/rpmdb_load "${dest}" < "${x}"
+        rm "${x}"
+      done
 
-    rpm --rebuilddb || { rebuilddbdirs=( /usr/share/rpmrebuilddb.* ) && [ -d "${rebuilddbdirs[0]}" ]
-      mv "${rebuilddbdirs[0]}"/* /usr/share/rpm
-      rmdir "${rebuilddbdirs[0]}"
+      cd -
+
+      rpm --rebuilddb || { rebuilddbdirs=( /usr/share/rpmrebuilddb.* ) && [ -d "${rebuilddbdirs[0]}" ]
+        mv "${rebuilddbdirs[0]}"/* /usr/share/rpm
+        rmdir "${rebuilddbdirs[0]}"
+      }
     }
 
     echo "cleaning all yum repos" 1>&2
