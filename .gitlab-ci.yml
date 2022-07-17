@@ -18,6 +18,7 @@ variables:
 test:
   stage: test
   script:
+    - /usr/lib/untrustedhost/scripts/pkginst.sh rpm dnf
     - bash -exc 'for v in $VARIANTS ; do VERSION_CODENAME=$v ./build.sh ; done'
     - bash -exc 'for v in $FEDORA_VARIANTS ; do FEDORA_VER=$v ./build-fedora.sh ; done'
   except:
@@ -38,6 +39,7 @@ deploy:
   environment:
     name: deploy
   script:
+    - /usr/lib/untrustedhost/scripts/pkginst.sh rpm dnf
     - bash -exc 'for v in $VARIANTS ; do VERSION_CODENAME=$v ./build.sh ; done'
     - bash -exc 'for v in $FEDORA_VARIANTS ; do FEDORA_VER=$v ./build-fedora.sh ; done'
     - bash -exc 'for v in $VARIANTS ; do IMAGESOURCE="build/$v/release" VARIANT="$v" /usr/lib/untrustedhost/scripts/publish-docker ; done'
