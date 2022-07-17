@@ -1,21 +1,25 @@
-# use ubuntu library image until our works
 image: registry.gitlab.com/untrustedhost/docker-in-docker
 services:
   - docker:dind
 variables:
   DOCKER_HOST: tcp://docker:2375
   DOCKER_DRIVER: overlay2
-#  RELEASE_IMAGE:
+# this is...the ubuntu release tag...
   GITLAB_RELEASE_IMAGE: registry.gitlab.com/untrustedhost/baseimages/ubuntu
+# and fedora can have it's own. thankfully the release bits don't conflict.
+  FEDORA_RELEASE_IMAGE: registry.gitlab.com/untrustedhost/baseimages/fedora
   CODEBASE: base
   DEFAULT_VARIANT: focal
   VARIANTS: bionic focal jammy
+  DEFAULT_FEDORA: 36
+  FEDORA_VARIANTS: 35 36
 
 # any non-mainline branch tries to build an image as a test.
 test:
   stage: test
   script:
     - bash -exc 'for v in $VARIANTS ; do VERSION_CODENAME=$v ./build.sh ; done'
+    - bash -exc 'for v in $FEDORA_VARIANTS ; do FEDORA_VER=$v ./build-fedora.sh ; done'
   except:
     - mainline
 
