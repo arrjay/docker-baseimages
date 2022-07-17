@@ -452,7 +452,7 @@ docker_init () {
   rm "${distribution}-${release}-${arch}.tar"
 
   echo "running initial docker setup" 1>&2
-  docker run -i --name "setup_${distribution}-${release}-${arch}" -t "pre/${distribution}-${release}-${arch}" /startup
+  docker run --name "setup_${distribution}-${release}-${arch}" -t "pre/${distribution}-${release}-${arch}" /startup
 
   # FIXME dropping the architecture right here for now
   echo "importing docker-ready image" 1>&2
