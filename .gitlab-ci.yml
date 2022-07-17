@@ -39,6 +39,8 @@ deploy:
     name: deploy
   script:
     - bash -exc 'for v in $VARIANTS ; do VERSION_CODENAME=$v ./build.sh ; done'
+    - bash -exc 'for v in $FEDORA_VARIANTS ; do FEDORA_VER=$v ./build-fedora.sh ; done'
     - bash -exc 'for v in $VARIANTS ; do IMAGESOURCE="build/$v/release" VARIANT="$v" /usr/lib/untrustedhost/scripts/publish-docker ; done'
+    - bash -exc 'GITLAB_RELEASE_IMAGE=$FEDORA_RELEASE_IMAGE DEFAULT_VARIANT=$DEFAULT_FEDORA ; for v in $FEDORA_VARIANTS ; do IMAGESOURCE="final/fedora:$v" VARIANT="$v" /usr/lib/untrustedhost/scripts/publish-docker ; done'
   only:
     - mainline
