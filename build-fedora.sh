@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-echo "I am currently a noop"
+exec ./mkimage-chroot.sh config/dnf/fedora-"${1}"
