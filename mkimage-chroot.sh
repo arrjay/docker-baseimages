@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -eux
 set -o pipefail
 
 # locate source files
@@ -313,11 +313,15 @@ create_chroot_tarball () {
   } > "${scratch}/usr/lib/untrustedhost/facts.d/${CODEBASE}.txt"
   install -D docker/facter/facter.conf "${scratch}/etc/puppetlabs/facter/facter.conf"
   printf '127.0.0.1   localhost localhost.localdomain\n'    > "${scratch}/etc/hosts"
+  [[ -e "config/${packagemanager}/pkginst.sh" ]] && {
+    install -D -m 0755 "config/${packagemanager}/pkginst.sh" "${scratch}/usr/lib/untrustedhost/scripts/pkginst.sh"
+  }
   tar --numeric-owner --group=0 --owner=0 -c -C "${scratch}" --files-from=- -f "${conftar}" 2>/dev/null << EOA || true
 ./etc/mtab
 ./etc/hosts
 ./etc/stamps.d/base-build.stamp
 ./etc/stamps.d/base-code.stamp
+./usr/lib/untrustedhost/scripts/pkginst.sh
 ./usr/lib/untrustedhost/facts.d/${CODEBASE}.txt
 ./etc/puppetlabs/facter/facter.conf
 ./etc/sysconfig/network
