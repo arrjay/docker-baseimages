@@ -9,4 +9,4 @@ RUN bash -c 'rpmgpg=( /etc/pki/rpm-gpg/RPM-GPG-KEY* /etc/pki/rpm-gpg/*.asc) ; \
         true ; \
       done'
 
-RUN bash -c '[ "${ADDITIONAL_RPM_PACKAGES}" ] && yum -y install ${ADDITIONAL_RPM_PACKAGES} || true'
+RUN bash -c '[ "${ADDITIONAL_RPM_PACKAGES}" ] && /usr/lib/untrustedhost/scripts/pkginst.sh ${ADDITIONAL_RPM_PACKAGES} || true'

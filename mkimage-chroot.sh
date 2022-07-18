@@ -530,6 +530,9 @@ add_layers () {
           [ "${!dist_addstr:-}" ]            && additional_rpms+=("${!dist_addstr}")
         ;;
       esac
+      case "${distribution}" in
+        fedora) additional_rpms+=("fedora-release-common") ;;
+      esac
       IFS=' ' docker build -f "${subdir}/Dockerfile" -t "final/${distribution}:${release}" --build-arg ADDITIONAL_RPM_PACKAGES="${additional_rpms[*]}" .
     else
       docker tag "stage2/${distribution}-${release}" "final/${distribution}:${release}"
