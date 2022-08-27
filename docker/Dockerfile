@@ -43,7 +43,7 @@ RUN apt-get install debsums && \
     /usr/lib/untrustedhost/scripts/debsums_init
 
 # install additional packages now, try a dist upgrade
-RUN apt-get install apt-transport-https ca-certificates xz-utils gnupg && \
+RUN apt-get install apt-transport-https ca-certificates xz-utils zstd gnupg && \
     apt-get dist-upgrade
 
 # finally, clean up anything apt left about

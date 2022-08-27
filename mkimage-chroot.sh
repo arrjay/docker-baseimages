@@ -516,7 +516,7 @@ add_layers () {
   distribution="${subdir#*${packagemanager}/}"
   release="${distribution#*-}"
   distribution="${distribution%-${release}}"
-  additional_rpms=()
+  additional_rpms=('zstd')
 
   stage2name=$(docker images "stage2/${distribution}-${release}" --format "{{.Repository}}")
 
