@@ -1,5 +1,8 @@
 FROM build/pre
 
+# mostly to figure out which sources.list we're using
+ARG SERIES=ubuntu
+
 # shut up, apt
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -18,11 +21,13 @@ RUN DEBOOTSTRAP_DIR=/debootstrap /debootstrap/debootstrap --second-stage --merge
 RUN rm /var/log/bootstrap.log
 
 # init sources.list for all repos now. we just had the base before.
-COPY apt/sources.list /etc/apt/sources.list
+COPY ${SERIES}/apt/sources.list /etc/apt/sources.list
 RUN chmod 0644 /etc/apt/sources.list
-RUN bash -c '. /etc/os-release && sed -i -e "s/CODENAME/${UBUNTU_CODENAME}/g" /etc/apt/sources.list'
+# hackes intensify.
+RUN bash -c '[[ "${SERIES}" == "debian" ]] && { . /etc/os-release && sed -i -e "s/CODENAME/${VERSION_CODENAME}/g" /etc/apt/sources.list ; } || true'
+RUN bash -c '[[ "${SERIES}" == "ubuntu" ]] && { . /etc/os-release && sed -i -e "s/CODENAME/${UBUNTU_CODENAME}/g" /etc/apt/sources.list ; } || true'
 # hack.
-RUN bash -c 'uname -m | grep -q 86 || sed -i -e "s@us.archive.ubuntu.com/ubuntu/@ports.ubuntu.com/ubuntu-ports/@g" /etc/apt/sources.list'
+RUN bash -c '[[ "${SERIES}" == "ubuntu" ]] && { uname -m | grep -q 86 || sed -i -e "s@us.archive.ubuntu.com/ubuntu/@ports.ubuntu.com/ubuntu-ports/@g" /etc/apt/sources.list ; } || true'
 
 # reference: https://wiki.ubuntu.com/ReducingDiskFootprint
 

@@ -43,6 +43,9 @@ case "${ARCH}" in
   *)    [ "${UBUNTU_URI:=}" ] || UBUNTU_URI=https://mirrors.kernel.org/ubuntu/ ;;
 esac
 
+[[ "${KEYRING:-}" ]] || KEYRING="ubuntu-archive-keyring.gpg"
+[[ "${SERIES:-}" ]] || SERIES="ubuntu"
+
 filt=('cat')
 [[ "${qemu_bin:=}" ]] && filt=('bsdtar' '-cf' '-' "--exclude=${qemu_bin#/}" '@-')
 
@@ -125,7 +128,7 @@ debootstrap () {
    bash "${PWD}/vendor/debootstrap/debootstrap" \
     --verbose --variant=minbase "--arch=${arch}" \
     --foreign --merged-usr \
-    --keyring="${PWD}/ubuntu-archive-keyring.gpg" \
+    --keyring="${PWD}/${KEYRING}" \
     "${release}" \
     "${rootdir}" \
     "${UBUNTU_URI}" 1>&2
@@ -150,7 +153,7 @@ temp_chroot="$(debootstrap "${VERSION_CODENAME}" "${ARCH}")"
 sudo tar cpf - -C "${temp_chroot}" . | docker import - build/pre
 
 # run finalization *in* a docker container
-docker build -t build/debootstrap docker-debootstrap-finalize
+docker build --build-arg="SERIES=${SERIES}" -t build/debootstrap docker-debootstrap-finalize
 
 # which we turned back into a chroot for usrmerge :/
 usrmerge_chroot="$(mktemp -d)"
