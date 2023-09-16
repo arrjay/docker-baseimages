@@ -31,8 +31,11 @@ _podman_images
 _buildah_status
 
 # tuneables
+[[ "${SERIES:-}" ]] || SERIES="ubuntu"
 [ "${VERSION_CODENAME:=}" ] || VERSION_CODENAME=bionic
 [ "${ARCH:=}" ] || ARCH=amd64
+
+# TODO: clean up this, it should probably be MIRROR_SOURCE
 case "${ARCH}" in
   arm*) [ "${UBUNTU_URI:=}" ] || UBUNTU_URI=http://ports.ubuntu.com/ubuntu-ports/
       case "${ARCH}" in
@@ -40,11 +43,14 @@ case "${ARCH}" in
         armhf) qemu_bin="$(command -v qemu-arm-static)"     ;;
       esac
     ;;
-  *)    [ "${UBUNTU_URI:=}" ] || UBUNTU_URI=https://mirrors.kernel.org/ubuntu/ ;;
+  *)
+    case "${SERIES}" in
+      debian) [ "${UBUNTU_URI:=}" ] || UBUNTU_URI=https://mirrors.kernel.org/debian/ ;;
+      ubuntu) [ "${UBUNTU_URI:=}" ] || UBUNTU_URI=https://mirrors.kernel.org/ubuntu/ ;;
+    esac
 esac
 
 [[ "${KEYRING:-}" ]] || KEYRING="ubuntu-archive-keyring.gpg"
-[[ "${SERIES:-}" ]] || SERIES="ubuntu"
 
 filt=('cat')
 [[ "${qemu_bin:=}" ]] && filt=('bsdtar' '-cf' '-' "--exclude=${qemu_bin#/}" '@-')

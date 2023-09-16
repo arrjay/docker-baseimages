@@ -11,8 +11,10 @@ variables:
   CODEBASE: base
   DEFAULT_VARIANT: focal
   VARIANTS: bionic focal jammy
-  DEFAULT_FEDORA: 36
-  FEDORA_VARIANTS: 35 36
+  DEFAULT_FEDORA: 38
+  FEDORA_VARIANTS: 37 38
+  DEBIAN_VARIANTS: bookworm
+  DEFAULT_DEBIAN: bookworm
 
 # any non-mainline branch tries to build an image as a test.
 test:
@@ -20,6 +22,7 @@ test:
   script:
     - /usr/lib/untrustedhost/scripts/pkginst.sh rpm dnf
     - bash -exc 'for v in $VARIANTS ; do VERSION_CODENAME=$v ./build.sh ; done'
+    - bash -exc 'for v in $DEBIAN_VARIANTS ; do KEYRING=debian-archive-keyring.gpg SERIES=debian VERSION_CODENAME=$v ./build.sh ; done'
     - bash -exc 'for v in $FEDORA_VARIANTS ; do FEDORA_VER=$v ./build-fedora.sh ; done'
   except:
     - mainline
