@@ -109,7 +109,7 @@ create_chroot_tarball () {
        # with flags as called
        # in our chroot
        # using the deboostrap_mirror mirror.
-       sudo DEBOOTSTRAP_DIR="${debootstrap_dir}/debootstrap" \
+       sudo DEBOOTSTRAP_DIR="${debootstrap_dir}" \
          bash "${debootstrap_dir}/debootstrap" \
            --verbose \
            --variant=minbase \
