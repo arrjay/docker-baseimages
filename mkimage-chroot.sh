@@ -318,6 +318,7 @@ create_chroot_tarball () {
 ./etc/hosts
 ./etc/stamps.d/base-build.stamp
 ./etc/stamps.d/base-code.stamp
+./usr/lib/untrustedhost/scripts/debsums_init
 ./usr/lib/untrustedhost/scripts/pkginst.sh
 ./usr/lib/untrustedhost/facts.d/${CODEBASE}.txt
 ./etc/puppetlabs/facter/facter.conf
