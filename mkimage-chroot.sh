@@ -16,9 +16,6 @@ devtgz="${srcdir}/devs.tar.gz"
 
 debootstrap_dir="${srcdir}/debootstrap"
 
-[ "${UBUNTU_URI:=}" ] || UBUNTU_URI=https://mirrors.kernel.org/ubuntu/
-echo "using ${UBUNTU_URI} as debootstrap mirror."
-
 # reset umask
 umask 0022
 
@@ -92,11 +89,8 @@ create_chroot_tarball () {
     *) echo "unknown packagemanager" 1>&2 ; exit 240 ;;
   esac
 
-  # handle *really* old ubuntu releases
-  case "${release}" in
-    precise) UBUNTU_URI=https://old-releases.ubuntu.com/ubuntu/ ;;
-    trusty)  UBUNTU_URI=http://archive.ubuntu.com/ubuntu/      ;;
-  esac
+  # if we have a mirror in configdata, use that
+  [ -f "${subdir}/deboostrap-mirror" ] && read -r debootstrap_mirror < "${subdir}/debootstrap-mirror"
 
   # reread arch at this point, in case we are building for...not x86_64/amd64.
   [ -f "${subdir}/arch" ] && read -r arch < "${subdir}/arch"
@@ -114,7 +108,7 @@ create_chroot_tarball () {
        # for our architecture
        # with flags as called
        # in our chroot
-       # using the UBUNTU_URI mirror.
+       # using the deboostrap_mirror mirror.
        sudo DEBOOTSTRAP_DIR="${srcdir}/debootstrap" \
          bash "${debootstrap_dir}/debootstrap" \
            --verbose \
@@ -122,7 +116,7 @@ create_chroot_tarball () {
            "--arch=${arch}" \
            "${@}" \
            "${rootdir}" \
-          "${UBUNTU_URI}"
+          "${debootstrap_mirror:-}"
     }
     type dnf 2> /dev/null 1>&2 && {
       echo "using dnf for yum calls" 1>&2
