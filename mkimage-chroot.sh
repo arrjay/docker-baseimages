@@ -295,6 +295,9 @@ create_chroot_tarball () {
       mkdir -p --mode=0755 "${scratch}"/var/cache/yum
       printf 'NETWORKING=yes\nHOSTNAME=localhost.localdomain\n' > "${scratch}"/etc/sysconfig/network
     ;;
+    apt)
+      install -D docker/scripts/debsums_init "${scratch}/usr/lib/untrustedhost/scripts/debsums_init"
+    ;;
   esac
   cp       startup.sh  "${scratch}"/startup
   mkdir -p --mode=0755 "${scratch}"/var/cache/ldconfig
