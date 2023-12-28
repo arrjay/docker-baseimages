@@ -498,10 +498,6 @@ check_existing () {
   fi
 }
 
-build_pki_layer () {
-  docker build -f "pki/Dockerfile" -t "pki" pki
-}
-
 add_layers () {
   local packagemanager distribution release subdir stage2name additional_rpms dist_addstr
   subdir="${1}"
