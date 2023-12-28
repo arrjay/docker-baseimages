@@ -1,26 +1,14 @@
-case $ARCH in
-  amd64|i386)
-	default_mirror http://archive.ubuntu.com/ubuntu
-	;;
-  sparc)
-	case $SUITE in
-	  gutsy)
-	default_mirror http://archive.ubuntu.com/ubuntu
-	;;
-	  *)
-	default_mirror http://ports.ubuntu.com/ubuntu-ports
-	;;
-	esac
-	;;
-  *)
-	default_mirror http://ports.ubuntu.com/ubuntu-ports
-	;;
-esac
+
+# For PureOS "amber"
+# PureOS: https://www.pureos.net/ 
+# Contact: https://tracker.pureos.net/
+
 mirror_style release
 download_style apt
 finddebs_style from-indices
 variants - buildd fakechroot minbase
-keyring /usr/share/keyrings/ubuntu-archive-keyring.gpg
+keyring /usr/share/keyrings/pureos-archive-keyring.gpg
+default_mirror https://repo.pureos.net/pureos/
 
 if doing_variant fakechroot; then
 	test "$FAKECHROOT" = "true" || error 1 FAKECHROOTREQ "This variant requires fakechroot environment to be started"
@@ -40,6 +28,9 @@ work_out_debs () {
 		#required="$required $(get_debs Priority: important)"
 		#  ^^ should be getting debconf here somehow maybe
 		base="$(get_debs Priority: important)"
+
+		# we want the PureOS minimal dependency set to be installed
+		base="$base pureos-minimal"
 	elif doing_variant buildd; then
 		base="apt build-essential"
 	elif doing_variant minbase; then
@@ -59,16 +50,11 @@ work_out_debs () {
 }
 
 first_stage_install () {
-	set -x
-	case "$CODENAME" in
-		etch|etch-m68k|jessie|jessie-kfreebsd|lenny|squeeze|wheezy) ;;
-		*)
-			EXTRACT_DEB_TAR_OPTIONS="$EXTRACT_DEB_TAR_OPTIONS -k"
-			setup_merged_usr
-			;;
-	esac
+	MERGED_USR="yes"
+	EXTRACT_DEB_TAR_OPTIONS="$EXTRACT_DEB_TAR_OPTIONS -k"
 
-	extract $required || true
+	setup_merged_usr
+	extract $required
 
 	mkdir -p "$TARGET/var/lib/dpkg"
 	: >"$TARGET/var/lib/dpkg/status"
@@ -80,7 +66,7 @@ first_stage_install () {
 		chown 0:0 "$TARGET/etc/fstab"; chmod 644 "$TARGET/etc/fstab"
 	fi
 
-	#setup_devices
+	setup_devices
 }
 
 second_stage_install () {
@@ -115,6 +101,7 @@ Status: install ok installed" >> "$TARGET/var/lib/dpkg/status"
 	if doing_variant fakechroot; then
 		setup_proc_fakechroot
 	else
+		setup_proc
 		in_target /sbin/ldconfig
 	fi
 
@@ -190,16 +177,6 @@ echo
 echo \"Warning: Fake start-stop-daemon called, doing nothing\"" > "$TARGET/sbin/start-stop-daemon"
 	chmod 755 "$TARGET/sbin/start-stop-daemon"
 
-	if [ -x "$TARGET/sbin/initctl" ]; then
-	  mv "$TARGET/sbin/initctl" "$TARGET/sbin/initctl.REAL"
-	  echo \
-"#!/bin/sh
-if [ \"\$1\" = version ]; then exec /sbin/initctl.REAL \"\$@\"; fi
-echo
-echo \"Warning: Fake initctl called, doing nothing\"" > "$TARGET/sbin/initctl"
-	  chmod 755 "$TARGET/sbin/initctl"
-	fi
-
 	setup_dselect_method apt
 
 	smallyes '' |
@@ -240,9 +217,6 @@ echo \"Warning: Fake initctl called, doing nothing\"" > "$TARGET/sbin/initctl"
 			dpkg_progress $baseprog $bases CONFBASE "Configuring base system" CONFIGURING
 	fi
 
-	if [ -x "$TARGET/sbin/initctl.REAL" ]; then
-		mv "$TARGET/sbin/initctl.REAL" "$TARGET/sbin/initctl"
-	fi
 	mv "$TARGET/sbin/start-stop-daemon.REAL" "$TARGET/sbin/start-stop-daemon"
 	rm -f "$TARGET/usr/sbin/policy-rc.d"
 
