@@ -14,7 +14,7 @@ srcdir="$( cd -P "$( dirname "${source}" )" && pwd )"
 
 devtgz="${srcdir}/devs.tar.gz"
 
-debootstrap_dir="${srcdir}/debootstrap"
+debootstrap_dir="${srcdir}/vendor/debootstrap"
 
 # reset umask
 umask 0022
@@ -109,7 +109,7 @@ create_chroot_tarball () {
        # with flags as called
        # in our chroot
        # using the deboostrap_mirror mirror.
-       sudo DEBOOTSTRAP_DIR="${srcdir}/debootstrap" \
+       sudo DEBOOTSTRAP_DIR="${debootstrap_dir}/debootstrap" \
          bash "${debootstrap_dir}/debootstrap" \
            --verbose \
            --variant=minbase \

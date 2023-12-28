@@ -1,5 +1,0 @@
-#!/usr/bin/env sh
-
-# I exist to make deboostrap happy!
-
-exit 0
