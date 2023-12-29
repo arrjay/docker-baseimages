@@ -442,7 +442,7 @@ EOA
 }
 
 docker_init () {
-  local packagemanager distribution release subdir
+  local packagemanager distribution release subdir usrmerge_root
   subdir="${1}"
   packagemanager="${subdir%/*}"
   packagemanager="${packagemanager#*/}"
@@ -457,8 +457,20 @@ docker_init () {
   docker run --name "setup_${distribution}-${release}-${arch}" -t "pre/${distribution}-${release}-${arch}" /startup
 
   # FIXME dropping the architecture right here for now
-  echo "importing docker-ready image" 1>&2
-  docker export "setup_${distribution}-${release}-${arch}" | docker import - "build/${distribution}-${release}"
+  case "${packagemanager}" in
+    apt)
+      echo "installing usrmerge" 1>&2
+      usrmerge_root="$(mktemp -d)"
+      docker export "setup_${distribution}-${release}-${arch}" | sudo tar xpf - -C "${usrmerge_root}"
+      sudo chroot "${usrmerge_root}" env PATH=/usr/bin:/bin:/usr/sbin:/sbin DEBIAN_FRONTEND=noninteractive apt-get install usrmerge
+      sudo tar cpf - -C "${usrmerge_root}" . | docker import - "build/${distribution}-${release}"
+      sudo rm -rf "${usrmerge_root}"
+    ;;
+    *)
+      echo "importing docker-ready image" 1>&2
+      docker export "setup_${distribution}-${release}-${arch}" | docker import - "build/${distribution}-${release}"
+    ;;
+  esac
   docker rm "setup_${distribution}-${release}-${arch}"
   docker rmi "pre/${distribution}-${release}-${arch}"
 
