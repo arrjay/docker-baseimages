@@ -482,6 +482,7 @@ docker_init () {
           sudo chroot "${usrmerge_root}" env PATH=/usr/bin:/bin:/usr/sbin:/sbin dpkg-divert --rename --remove "${fixdivert}"
         }
       done
+      sudo rm -f "${usrmerge_root}/etc/resolv.conf"
 
       echo "importing docker-ready image" 1>&2
       sudo tar cpf - -C "${usrmerge_root}" . | docker import - "build/${distribution}-${release}"
