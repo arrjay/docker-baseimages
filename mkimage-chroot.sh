@@ -442,7 +442,7 @@ EOA
 }
 
 docker_init () {
-  local packagemanager distribution release subdir usrmerge_root
+  local packagemanager distribution release subdir usrmerge_root fixdivert
   subdir="${1}"
   packagemanager="${subdir%/*}"
   packagemanager="${packagemanager#*/}"
@@ -462,7 +462,26 @@ docker_init () {
       echo "installing usrmerge" 1>&2
       usrmerge_root="$(mktemp -d)"
       docker export "setup_${distribution}-${release}-${arch}" | sudo tar xpf - -C "${usrmerge_root}"
+      sudo rm -f "${usrmerge_root}/etc/resolv.conf"
+      sudo tee "${usrmerge_root}/etc/resolv.conf" < /etc/resolv.conf > /dev/null
       sudo chroot "${usrmerge_root}" env PATH=/usr/bin:/bin:/usr/sbin:/sbin DEBIAN_FRONTEND=noninteractive apt-get install usrmerge
+      [[ -x "${usrmerge_root}/usr/lib/systemd/systemd-resolved" ]] && {
+        sudo install -D -m0644 -o 0 -g 0 \
+         systemd-system/systemd-resolved.service.d/00_usrmerge.conf \
+         /etc/systemd/system/systemd-resolved.service.d/00_usrmerge.conf
+      }
+
+      echo "cleaning up from apt activity" 1>&2
+      sudo chroot "${usrmerge_root}" env PATH=/usr/bin:/bin:/usr/sbin:/sbin DEBIAN_FRONTEND=noninteractive apt-get clean all
+      sudo rm -rf "${usrmerge_root}/var/lib/apt/lists"/*
+      for fixdivert in /usr/bin/ischroot /usr/sbin/invoke-rc.d ; do
+        [[ -f "${usrmerge_root}/${fixdivert}" ]] && {
+          sudo rm "${usrmerge_root}/${fixdivert}"
+          sudo chroot "${usrmerge_root}" env PATH=/usr/bin:/bin:/usr/sbin:/sbin --rename --remove "${fixdivert}"
+        }
+      done
+
+      echo "importing docker-ready image" 1>&2
       sudo tar cpf - -C "${usrmerge_root}" . | docker import - "build/${distribution}-${release}"
       sudo rm -rf "${usrmerge_root}"
     ;;

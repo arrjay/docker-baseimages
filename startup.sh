@@ -78,12 +78,6 @@ case "${platform}" in
     apt-get --no-install-recommends install -qy apt-transport-https debsums ca-certificates
     apt-get -qy dist-upgrade
     debsums_init || /usr/lib/untrustedhost/scripts/debsums_init
-
-    echo "cleaning all apt activity" 1>&2
-    apt-get clean all
-    rm -rf /var/lib/apt/lists/*
-    rm /usr/bin/ischroot && dpkg-divert --rename --remove /usr/bin/ischroot
-    rm /usr/sbin/invoke-rc.d && dpkg-divert --rename --remove /usr/sbin/invoke-rc.d
   ;;
 esac
 
