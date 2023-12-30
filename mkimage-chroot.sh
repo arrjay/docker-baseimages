@@ -41,7 +41,9 @@ esac
 
 timestamp="$(date +%s)"
 
-echo "building ${coderev} at ${timestamp}"
+[[ "${CODEBASE:-}" ]] || export CODEBASE=base
+
+echo "building ${CODEBASE} ${coderev} at ${timestamp}"
 
 # create a scratch directory to use for working files
 wkdir=$(env TMPDIR=/var/tmp mktemp -d)
