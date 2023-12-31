@@ -67,8 +67,9 @@ sudo () { env "$@"; }
 
 create_chroot_tarball () {
   local packagemanager distribution release subdir __debootstrap debootstrap_file __centos_contentdir
-  local repos_d repos2_d gpg apt_conf_file apt_conf_files
+  local repos_d repos2_d gpg apt_conf_file apt_conf_files dpkg_conf_file dpkg_conf_files
   apt_conf_files=()
+  dpkg_conf_files=()
   subdir="${1}"
   packagemanager="${subdir%/*}"
   packagemanager="${packagemanager#*/}"
@@ -304,6 +305,10 @@ create_chroot_tarball () {
         install -D -m 0644 "${apt_conf_file}" "${scratch}/etc/apt/${apt_conf_file#docker-debootstrap-finalize/}"
         apt_conf_files=("${apt_conf_files[@]}" "./etc/apt/${apt_conf_file#docker-debootstrap-finalize/}")
       done
+      for dpkg_conf_file in docker-debootstrap-finalize/dpkg/dpkg.cfg.d/* ; do
+        install -D -m 0644 "${dpkg_conf_file}" "${scratch}/etc/${dpkg_conf_file#docker-debootstrap-finalize/}"
+        dpkg_conf_files=("${dpkg_conf_files[@]}" "./etc/${dpkg_conf_file#docker-debootstrap-finalize/}")
+      done
     ;;
   esac
   cp       startup.sh  "${scratch}"/startup
@@ -334,6 +339,7 @@ create_chroot_tarball () {
 ./var/cache/ldconfig
 ./startup
 $(printf '%s\n' "${apt_conf_files[@]}")
+$(printf '%s\n' "${dpkg_conf_files[@]}")
 EOA
 
   # uncompress dev tar
