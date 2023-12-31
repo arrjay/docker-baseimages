@@ -67,7 +67,8 @@ sudo () { env "$@"; }
 
 create_chroot_tarball () {
   local packagemanager distribution release subdir __debootstrap debootstrap_file __centos_contentdir
-  local repos_d repos2_d gpg
+  local repos_d repos2_d gpg apt_conf_file apt_conf_files
+  apt_conf_files=()
   subdir="${1}"
   packagemanager="${subdir%/*}"
   packagemanager="${packagemanager#*/}"
@@ -298,7 +299,11 @@ create_chroot_tarball () {
       printf 'NETWORKING=yes\nHOSTNAME=localhost.localdomain\n' > "${scratch}"/etc/sysconfig/network
     ;;
     apt)
-      install -D docker/scripts/debsums_init "${scratch}/usr/lib/untrustedhost/scripts/debsums_init"
+      install -D -m 0755 docker/scripts/debsums_init "${scratch}/usr/lib/untrustedhost/scripts/debsums_init"
+      for apt_conf_file in docker-debootstrap-finalize/apt.conf.d/* ; do
+        install -D -m 0644 "${apt_conf_file}" "${scratch}/etc/apt/${apt_conf_file#docker-debootstrap-finalize/}"
+        apt_conf_files=("${apt_conf_files[@]}" "./etc/apt/${apt_conf_file#docker-debootstrap-finalize/}")
+      done
     ;;
   esac
   cp       startup.sh  "${scratch}"/startup
@@ -328,6 +333,7 @@ create_chroot_tarball () {
 ./var/cache/yum
 ./var/cache/ldconfig
 ./startup
+$(printf '%s\n' "${apt_conf_files[@]}")
 EOA
 
   # uncompress dev tar
