@@ -84,11 +84,33 @@ case "${platform}" in
     echo "installing sources.list" 1>&2
     install -m644 /apt-sources.list /etc/apt/sources.list && rm /apt-sources.list
 
-    echo "installing apt-transport-https, debsums, ca-certificates" 1>&2
+    echo "updating apt against newly installed sources.list" 1>&2
     apt-get update || { ls -lR / ; exit 1 ; }
+
+    echo "configuring localepurge, installing localepurge" 1>&2
+    printf '%s\n' 'localepurge localepurge/use-dpkg-feature boolean false' \
+                  'localepurge localepurge/mandelete boolean true' \
+                  'localepurge localepurge/dontbothernew boolean true' \
+                  'localepurge localepurge/showfreedspace boolean false' \
+                  'localepurge localepurge/quickndirtycale boolean true' \
+                  'localepurge localepurge/verbose boolean false' \
+                  'localepurge localepurge/nopurge string en,en_US,en_US.UTF-8' | debconf-set-selections
+    apt-get install localepurge
+    printf '%s\n' 'localepurge localepurge/use-dpkg-feature boolean true' | debconf-set-selections
+    dpkg-reconfigure localepurge
+
+    echo "installing apt-transport-https, debsums, ca-certificates libfile-find-rule-perl" 1>&2
     apt-get install apt-transport-https debsums ca-certificates libfile-find-rule-perl
-    apt-get dist-upgrade
+
+    echo "initializing debsums" 1>&2
     debsums_init || /usr/lib/untrustedhost/scripts/debsums_init
+
+    echo "configuring ssl library apt behaviour"
+    libssl="$(dpkg -l | awk '$2 ~ /libssl[^-]/ {print $2}')"
+    printf '%s\n' "${libssl} libraries/restart-without-asking boolean true" | debconf-set-selections
+
+    echo "perferming dist-upgrade against new sources.list"
+    apt-get dist-upgrade
   ;;
 esac
 
