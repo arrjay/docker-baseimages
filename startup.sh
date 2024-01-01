@@ -67,17 +67,27 @@ case "${platform}" in
     read -r suite < debootstrap/suite
     case "${suite}" in
       xenial|precise|trusty) debootstrap_args="--second-stage" ;;
+      # work around dash preinst wanting to manipulate the sh.distrib (and friends) man page
+      bionic) mkdir -p /usr/share/man/man1 ;;
     esac
     /debootstrap/debootstrap ${debootstrap_args} || { cat /debootstrap/debootstrap.log ; exit 1; }
     rm -f /var/log/debootstrap.log
+
+    case "${suite}" in
+      # undo the dash hack
+      bionic)
+        rm /usr/share/man/man1/sh.1.gz
+        rmdir /usr/share/man/man1 /usr/share/man
+      ;;
+    esac
 
     echo "installing sources.list" 1>&2
     install -m644 /apt-sources.list /etc/apt/sources.list && rm /apt-sources.list
 
     echo "installing apt-transport-https, debsums, ca-certificates" 1>&2
     apt-get update || { ls -lR / ; exit 1 ; }
-    apt-get --no-install-recommends install -qy apt-transport-https debsums ca-certificates
-    apt-get -qy dist-upgrade
+    apt-get install apt-transport-https debsums ca-certificates libfile-find-rule-perl
+    apt-get dist-upgrade
     debsums_init || /usr/lib/untrustedhost/scripts/debsums_init
   ;;
 esac
