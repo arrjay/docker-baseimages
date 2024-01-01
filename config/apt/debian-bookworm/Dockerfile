@@ -2,7 +2,7 @@ FROM stage2/debian-bookworm
 
 RUN update-ca-certificates
 
-RUN apt-get -q -y update && \
-    env LC_ALL=C DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends install -q -y \
+RUN apt-get update && \
+    env LC_ALL=C DEBIAN_FRONTEND=noninteractive apt-get install \
      xz-utils && \
-    apt-get -q -y clean all && rm -rf /var/lib/apt/lists/*
+    apt-get clean all && rm -rf /var/lib/apt/lists/*

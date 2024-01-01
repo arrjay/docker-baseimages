@@ -478,7 +478,7 @@ docker_init () {
       docker export "setup_${distribution}-${release}-${arch}" | sudo tar xpf - -C "${usrmerge_root}"
       sudo rm -f "${usrmerge_root}/etc/resolv.conf"
       sudo tee "${usrmerge_root}/etc/resolv.conf" < /etc/resolv.conf > /dev/null
-      sudo chroot "${usrmerge_root}" env PATH=/usr/bin:/bin:/usr/sbin:/sbin DEBIAN_FRONTEND=noninteractive apt-get install -qq -y usrmerge
+      sudo chroot "${usrmerge_root}" env PATH=/usr/bin:/bin:/usr/sbin:/sbin DEBIAN_FRONTEND=noninteractive apt-get install usrmerge
       [[ -x "${usrmerge_root}/usr/lib/systemd/systemd-resolved" ]] && {
         sudo install -D -m0644 -o 0 -g 0 \
          systemd-system/systemd-resolved.service.d/00_usrmerge.conf \
@@ -524,7 +524,7 @@ docker_check () {
   case "${packagemanager}" in
     yum|dnf) docker run --rm=true "${image}" "${packagemanager}" check-update ;;
     zyp) docker run --rm=true "${image}" zypper patch-check ;;
-    apt) docker run --rm=true "${image}" bash -ec '{ export TERM=dumb ; apt-get -q update && apt-get dist-upgrade --assume-no; }' ;;
+    apt) docker run --rm=true "${image}" bash -ec '{ export TERM=dumb ; apt-get update && apt-get dist-upgrade --assume-no; }' ;;
     *)   echo "don't know how to ${packagemanager}" 1>&2 ; exit 1 ;;
   esac
 }
